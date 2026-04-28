@@ -2,6 +2,7 @@ import { useSceneStore } from './stores/useSceneStore';
 import { MainMenu } from './components/game/MainMenu';
 import { SceneController } from './components/game/SceneController';
 import { CoreGameLoop } from './components/game/CoreGameLoop';
+import { DebugPanel } from './components/debug/DebugPanel';
 
 function App() {
   const phase = useSceneStore((s) => s.phase);
@@ -28,6 +29,7 @@ function App() {
   return (
     <div className="w-full h-full">
       {renderContent()}
+      <DebugPanel />
     </div>
   );
 }
