@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --color-calm: #87CEEB;
+  --color-tense: #FFD700;
+  --color-danger: #FF4444;
+  --color-spring: #90EE90;
+  --color-summer: #FFD700;
+  --color-autumn: #FF8C00;
+  --color-winter: #87CEEB;
+  --color-voice-mock: #888;
+  --color-voice-fragile: #ADD8E6;
+  --color-fragment: rgba(255, 255, 255, 0.15);
+  --color-fragment-hover: rgba(255, 255, 255, 0.35);
+  --color-choice-letgo: #888;
+  --color-choice-holdon: #ADD8E6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: #0a0a0f;
+  color: #e0e0e0;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+@keyframes float-up {
+  from { transform: translateY(0); opacity: 0.7; }
+  to { transform: translateY(-30px); opacity: 0; }
+}
+
+@keyframes fall {
+  from { transform: translateY(-100vh); }
+  to { transform: translateY(100vh); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(135, 206, 235, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(135, 206, 235, 0.6); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.15); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
+  60% { transform: scale(1); }
+}
+
+@keyframes shutdown {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(0.5); }
+  100% { filter: brightness(0); }
+}
+
+@keyframes reverseFlow {
+  from { transform: translateY(100vh) scale(0.5); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes enlightenmentBreath {
+  0%, 100% { opacity: 0.05; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(1.5); }
+}
+
+@keyframes dustFloat {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  25% { transform: translateY(-6px) translateX(3px); }
+  50% { transform: translateY(-3px) translateX(-2px); }
+  75% { transform: translateY(-8px) translateX(1px); }
+}
+
+@keyframes lampFlicker {
+  0%, 100% { opacity: 0.8; }
+  10% { opacity: 0.85; }
+  20% { opacity: 0.75; }
+  50% { opacity: 0.9; }
+  70% { opacity: 0.7; }
+  90% { opacity: 0.85; }
+}
+
+@keyframes enlightenmentLineReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

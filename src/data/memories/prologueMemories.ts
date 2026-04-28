@@ -1,0 +1,58 @@
+import type { Memory } from '../../types/skill';
+
+export const PROLOGUE_MEMORIES: Memory[] = [
+  {
+    id: 'memory_childhood_1',
+    type: 'good',
+    content: '[占位] 童年记忆：某个温暖的下午',
+    season: 'summer',
+    age: 8,
+    isHealed: false,
+    keywords: ['童年', '温暖', '下午'],
+  },
+  {
+    id: 'memory_school_1',
+    type: 'painful',
+    content: '[占位] 学校记忆：被嘲笑的那个下午',
+    season: 'autumn',
+    age: 12,
+    isHealed: false,
+    keywords: ['学校', '嘲笑', '孤独'],
+  },
+  {
+    id: 'memory_first_job',
+    type: 'painful',
+    content: '[占位] 第一份工作：加班到凌晨的夜晚',
+    season: 'winter',
+    age: 23,
+    isHealed: false,
+    keywords: ['工作', '加班', '疲惫'],
+  },
+  {
+    id: 'memory_friend_1',
+    type: 'good',
+    content: '[占位] 朋友记忆：有人认真听你说话',
+    season: 'spring',
+    age: 20,
+    isHealed: false,
+    keywords: ['朋友', '倾听', '理解'],
+  },
+  {
+    id: 'memory_family_1',
+    type: 'painful',
+    content: '[占位] 家庭记忆：电话那头的沉默',
+    season: 'autumn',
+    age: 25,
+    isHealed: false,
+    keywords: ['家庭', '沉默', '距离'],
+  },
+  {
+    id: 'memory_dream_1',
+    type: 'good',
+    content: '[占位] 梦想记忆：曾经想做的事',
+    season: 'spring',
+    age: 18,
+    isHealed: false,
+    keywords: ['梦想', '希望', '可能性'],
+  },
+];
