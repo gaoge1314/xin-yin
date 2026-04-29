@@ -10,6 +10,8 @@ export interface NpcEvent {
   id: string;
   triggerDay: number;
   triggerSeason?: string;
+  triggerHour?: number;
+  triggerDayOfWeek?: number;
   content: string;
   frequency?: NpcEventFrequency;
   minConnectionLevel?: number;

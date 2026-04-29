@@ -73,6 +73,30 @@ export const INITIAL_NPCS: Npc[] = [
         effect: { willpowerChange: -5 },
       },
       {
+        id: 'mother_breakfast',
+        triggerDay: 1,
+        triggerHour: 7,
+        content: '母亲端着碗走进来："起来吃点东西。一天不吃东西怎么行。"',
+        frequency: 'daily',
+        effect: { organChange: { stomach: 3 } },
+      },
+      {
+        id: 'mother_lunch',
+        triggerDay: 1,
+        triggerHour: 12,
+        content: '母亲在厨房喊："饭好了，快来。"桌上摆了两副碗筷。',
+        frequency: 'daily',
+        effect: { organChange: { stomach: 3 } },
+      },
+      {
+        id: 'mother_dinner',
+        triggerDay: 1,
+        triggerHour: 18,
+        content: '母亲摆好晚饭："今天做了你爱吃的。"她坐下来，等你一起吃。',
+        frequency: 'daily',
+        effect: { organChange: { stomach: 3 }, trustChange: 1 },
+      },
+      {
         id: 'mother_ask_cold',
         triggerDay: 10,
         content: '"今天降温，多穿点。你那屋里冷不冷？"',
@@ -108,6 +132,14 @@ export const INITIAL_NPCS: Npc[] = [
     currentCloseness: 45,
     isIntroduced: false,
     events: [
+      {
+        id: 'sister_discuss_future',
+        triggerDay: 1,
+        triggerDayOfWeek: 2,
+        content: '姐姐周末来了。她坐在你对面，认真地说："我们得谈谈以后怎么办。你不能一直这样下去。"她的语气不像母亲那样催促，更像是一种平静的坚持。',
+        frequency: 'trigger',
+        effect: { trustChange: 5, willpowerChange: -5 },
+      },
       {
         id: 'sister_job_info',
         triggerDay: 7,

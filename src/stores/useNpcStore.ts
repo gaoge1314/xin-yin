@@ -7,6 +7,7 @@ import { usePlayerStore } from './usePlayerStore';
 import { useCognitionStore } from './useCognitionStore';
 import { useWillpowerStore } from './useWillpowerStore';
 import { useOrganStore } from './useOrganStore';
+import { getDayOfWeek } from '../types/time';
 
 const FREQUENCY_DAYS: Record<NpcEventFrequency, number> = {
   daily: 1,
@@ -24,6 +25,16 @@ export interface NpcDialogEntry {
   content: string;
   eventId: string;
   effect?: NpcEvent['effect'];
+  timestamp?: number;
+}
+
+export interface InteractionRecord {
+  npcId: NpcKey;
+  npcName: string;
+  content: string;
+  eventId: string;
+  day: number;
+  hour: number;
 }
 
 interface NpcActions {
@@ -41,16 +52,27 @@ interface NpcActions {
   dismissActiveDialog: () => void;
   processNextDialog: () => void;
   checkHourlyNpcEvents: () => void;
+  checkTimeSpecificEvents: () => void;
+  getRecentInteractions: (count?: number) => InteractionRecord[];
+  updateMealTracking: () => void;
 }
 
 export const useNpcStore = create<{
   npcs: Npc[];
   activeNpcDialog: NpcDialogEntry | null;
   pendingDialogs: NpcDialogEntry[];
+  interactionHistory: InteractionRecord[];
+  mealConsecutiveDays: number;
+  mealAutoHandled: boolean;
+  daysApartFromMother: number;
 } & NpcActions>((set, get) => ({
   npcs: [...INITIAL_NPCS],
   activeNpcDialog: null,
   pendingDialogs: [],
+  interactionHistory: [],
+  mealConsecutiveDays: 0,
+  mealAutoHandled: false,
+  daysApartFromMother: 0,
 
   checkIntroductions: (): Npc[] => {
     const timeState = useTimeStore.getState();
@@ -88,6 +110,7 @@ export const useNpcStore = create<{
     const timeState = useTimeStore.getState();
     const day = timeState.totalDays;
     const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+    const dayOfWeek = getDayOfWeek(day);
 
     const triggered: NpcEvent[] = [];
 
@@ -96,6 +119,8 @@ export const useNpcStore = create<{
 
       npc.events.forEach((event) => {
         if (day < event.triggerDay) return;
+
+        if (event.triggerDayOfWeek !== undefined && dayOfWeek !== event.triggerDayOfWeek) return;
 
         const frequency = event.frequency ?? 'trigger';
         const interval = FREQUENCY_DAYS[frequency];
@@ -224,7 +249,20 @@ export const useNpcStore = create<{
       }
     }
 
-    set({ activeNpcDialog: null });
+    const timeState = useTimeStore.getState();
+    const record: InteractionRecord = {
+      npcId: dialog.npcId,
+      npcName: dialog.npcName,
+      content: dialog.content,
+      eventId: dialog.eventId,
+      day: timeState.totalDays,
+      hour: timeState.hour,
+    };
+
+    set((s) => ({
+      activeNpcDialog: null,
+      interactionHistory: [record, ...s.interactionHistory].slice(0, 30),
+    }));
   },
 
   processNextDialog: () => {
@@ -256,7 +294,7 @@ export const useNpcStore = create<{
   },
 
   reset: () => {
-    set({ npcs: [...INITIAL_NPCS], activeNpcDialog: null, pendingDialogs: [] });
+    set({ npcs: [...INITIAL_NPCS], activeNpcDialog: null, pendingDialogs: [], interactionHistory: [], mealConsecutiveDays: 0, mealAutoHandled: false, daysApartFromMother: 0 });
   },
 
   getFamilyMembers: (): Npc[] => {
@@ -324,6 +362,8 @@ export const useNpcStore = create<{
       for (const event of npc.events) {
         if (day < event.triggerDay) continue;
 
+        if (event.triggerHour !== undefined) continue;
+
         const frequency = event.frequency ?? 'trigger';
         if (frequency === 'trigger') continue;
 
@@ -346,6 +386,93 @@ export const useNpcStore = create<{
           get().triggerEventAsDialog(event);
           break;
         }
+      }
+    }
+  },
+
+  checkTimeSpecificEvents: () => {
+    const timeState = useTimeStore.getState();
+    const hour = timeState.hour;
+    const day = timeState.totalDays;
+    const dayOfWeek = getDayOfWeek(day);
+    const playerAtHome = usePlayerStore.getState().isAtHome;
+
+    const introducedNpcs = get().npcs.filter((npc) => npc.isIntroduced);
+    const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+
+    for (const npc of introducedNpcs) {
+      for (const event of npc.events) {
+        if (event.triggerHour === undefined) continue;
+        if (hour !== event.triggerHour) continue;
+        if (day < event.triggerDay) continue;
+
+        if (event.triggerDayOfWeek !== undefined && dayOfWeek !== event.triggerDayOfWeek) continue;
+
+        const frequency = event.frequency ?? 'trigger';
+        if (frequency === 'trigger') {
+          const alreadyTriggered = useSceneStore.getState().narrativeLog.some(
+            (log) => log.includes(event.content.substring(0, 20))
+          );
+          if (alreadyTriggered) continue;
+        } else {
+          const interval = FREQUENCY_DAYS[frequency];
+          const daysSinceTrigger = day - event.triggerDay;
+          if (daysSinceTrigger % interval !== 0) continue;
+        }
+
+        if (event.minConnectionLevel !== undefined && connectionLevel < event.minConnectionLevel) continue;
+
+        const alreadyInDialog = get().activeNpcDialog?.eventId === event.id;
+        const alreadyInPending = get().pendingDialogs.some(d => d.eventId === event.id);
+        const alreadyInLog = useSceneStore.getState().narrativeLog.some(
+          (log) => log.includes(event.content.substring(0, 20))
+        );
+
+        if (alreadyInDialog || alreadyInPending || alreadyInLog) continue;
+
+        const isMealEvent = event.id.startsWith('mother_') && (event.id.includes('breakfast') || event.id.includes('lunch') || event.id.includes('dinner'));
+
+        if (isMealEvent) {
+          if (!playerAtHome) continue;
+
+          if (get().mealAutoHandled) {
+            get().triggerEvent(event);
+            continue;
+          }
+        }
+
+        get().triggerEventAsDialog(event);
+      }
+    }
+  },
+
+  getRecentInteractions: (count: number = 10): InteractionRecord[] => {
+    return get().interactionHistory.slice(0, count);
+  },
+
+  updateMealTracking: () => {
+    const playerAtHome = usePlayerStore.getState().isAtHome;
+    const state = get();
+
+    if (playerAtHome) {
+      const hadMealToday = state.interactionHistory.some(
+        (r) => r.npcId === 'mother' && r.day === useTimeStore.getState().totalDays
+          && (r.eventId.includes('breakfast') || r.eventId.includes('lunch') || r.eventId.includes('dinner'))
+      );
+
+      if (hadMealToday) {
+        const newConsecutive = state.mealConsecutiveDays + 1;
+        const newAutoHandled = newConsecutive >= 3;
+        set({ mealConsecutiveDays: newConsecutive, mealAutoHandled: newAutoHandled, daysApartFromMother: 0 });
+      } else {
+        set({ daysApartFromMother: 0 });
+      }
+    } else {
+      const newDaysApart = state.daysApartFromMother + 1;
+      if (newDaysApart >= 3) {
+        set({ daysApartFromMother: newDaysApart, mealAutoHandled: false, mealConsecutiveDays: 0 });
+      } else {
+        set({ daysApartFromMother: newDaysApart });
       }
     }
   },

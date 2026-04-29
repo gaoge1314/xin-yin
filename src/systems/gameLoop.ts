@@ -84,6 +84,8 @@ class GameLoopManager {
       this.hourlyNpcCheck();
     }
 
+    useNpcStore.getState().checkTimeSpecificEvents();
+
     if (this.totalHours % 720 === 0) {
       this.tickSkillCooldowns();
     }
@@ -228,6 +230,10 @@ class GameLoopManager {
     }
 
     usePlayerStore.getState().naturalTrustRecovery();
+
+    useNpcStore.getState().updateMealTracking();
+
+    usePlayerStore.getState().setAtHome(true);
   }
 
   private dailyDecision() {

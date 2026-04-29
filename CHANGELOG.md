@@ -1,5 +1,64 @@
 # 更新日志
 
+## [v4.6] - 2026-04-29
+
+### 新增功能
+
+#### 右侧面板重构：世界信息 + 最近交往
+- 右侧面板从"技能"改为"世界"，默认展开
+- 新增 `WorldInfoPanel` 组件：显示当前年份/季节/星期 + 待触发世界事件 + 历史世界事件
+- 新增 `RecentInteractionsPanel` 组件：显示最近 10 条 NPC 交互记录（含 NPC 名、内容摘要、时间）
+- 技能和任务面板保留在右侧面板下方
+
+#### 母亲三餐事件系统
+- 新增 3 个定时三餐事件（7h 早餐 / 12h 午餐 / 18h 晚餐）
+- 三餐只在主角和母亲同时在家时触发
+- 累计 3 天后自动处理（直接写入日志，不再弹窗）
+- 主角和母亲分开 3 天后取消自动处理，下次同时在家重新触发三餐弹窗
+- 每日重置主角在家状态为 `true`
+
+#### 姐姐周六来访
+- 新增 `sister_discuss_future` 事件：第一个周六姐姐来找主角商量"以后怎么办"
+- 游戏开始时间为周四（第 0 天=周四，第 2 天=周六）
+
+#### 定时事件调度系统
+- `NpcEvent` 新增 `triggerHour` 字段：指定触发小时（0-23）
+- `NpcEvent` 新增 `triggerDayOfWeek` 字段：指定星期几触发
+- 新增 `checkTimeSpecificEvents()` 方法：每小时检查定时事件，100% 触发（非概率）
+- `checkHourlyNpcEvents()` 跳过有 `triggerHour` 的事件（避免重复触发）
+- `checkEvents()` 支持 `triggerDayOfWeek` 检查
+
+#### 时间系统扩展
+- 新增 `DayOfWeek` 类型、`DAY_OF_WEEK_LABELS` 标签、`getDayOfWeek()` 函数
+- 游戏第 0 天=周四，映射：0=周四, 1=周五, 2=周六, 3=周日, 4=周一, 5=周二, 6=周三
+
+#### NPC 交互历史追踪
+- 新增 `interactionHistory`：记录最近 30 条 NPC 交互（含 NPC ID、名称、内容、天数、小时）
+- 新增 `InteractionRecord` 接口
+- `dismissActiveDialog()` 关闭对话时自动记录交互历史
+- 新增 `getRecentInteractions(count?)` 方法
+
+#### 主角在家状态
+- `usePlayerStore` 新增 `isAtHome` 状态（默认 `true`）和 `setAtHome()` 方法
+- 每日重置为在家状态
+
+### 文件变更
+
+#### 新增文件
+- `src/components/game/WorldInfoPanel.tsx` - 世界信息面板组件
+- `src/components/game/RecentInteractionsPanel.tsx` - 最近交往面板组件
+
+#### 修改文件
+- `src/types/npc.ts` - NpcEvent 新增 triggerHour, triggerDayOfWeek 字段
+- `src/types/time.ts` - 新增 DayOfWeek 类型、DAY_OF_WEEK_LABELS、getDayOfWeek()
+- `src/data/npcs/initialNpcs.ts` - 母亲三餐事件 + 姐姐周六来访事件
+- `src/stores/useNpcStore.ts` - checkTimeSpecificEvents, interactionHistory, updateMealTracking, InteractionRecord
+- `src/stores/usePlayerStore.ts` - isAtHome 状态, setAtHome() 方法
+- `src/systems/gameLoop.ts` - 每 tick 调用 checkTimeSpecificEvents, 每日调用 updateMealTracking
+- `src/components/game/CoreGameLoop.tsx` - 右侧面板重构，集成 WorldInfoPanel + RecentInteractionsPanel
+
+---
+
 ## [v4.5] - 2026-04-29
 
 ### 新增功能

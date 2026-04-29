@@ -14,6 +14,8 @@ import { NarrativeDisplay } from '../narrative/NarrativeDisplay';
 import { WorldEventModal } from './WorldEventModal';
 import { NpcDialogModal } from './NpcDialogModal';
 import { TaskPanel } from './TaskPanel';
+import { WorldInfoPanel } from './WorldInfoPanel';
+import { RecentInteractionsPanel } from './RecentInteractionsPanel';
 import { CollapsiblePanel } from '../ui/CollapsiblePanel';
 import { gameLoop } from '../../systems/gameLoop';
 import { useTimeStore } from '../../stores/useTimeStore';
@@ -178,10 +180,18 @@ export const CoreGameLoop: React.FC = () => {
           </div>
         </div>
 
-        <CollapsiblePanel title="技能" side="right" defaultOpen={false}>
-          <SkillButtons />
-          <div className="border-t border-white/5 pt-3 mt-3">
-            <TaskPanel />
+        <CollapsiblePanel title="世界" side="right" defaultOpen={true}>
+          <div className="flex flex-col gap-4">
+            <WorldInfoPanel />
+            <div className="border-t border-white/5 pt-3">
+              <RecentInteractionsPanel />
+            </div>
+            <div className="border-t border-white/5 pt-3">
+              <SkillButtons />
+            </div>
+            <div className="border-t border-white/5 pt-3">
+              <TaskPanel />
+            </div>
           </div>
         </CollapsiblePanel>
       </div>

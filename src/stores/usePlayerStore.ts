@@ -39,6 +39,7 @@ interface PlayerActions {
   isColdResponse: () => boolean;
   isHighConnection: () => boolean;
   triggerEnlightenment: () => void;
+  setAtHome: (atHome: boolean) => void;
   reset: () => void;
 }
 
@@ -49,6 +50,7 @@ export const usePlayerStore = create<{
   trustChangeReason?: string;
   consecutiveUtilitarian: number;
   hasEnlightenment: boolean;
+  isAtHome: boolean;
 } & PlayerActions>((set, get) => ({
   influences: [],
   xinYinLevel: 0,
@@ -56,6 +58,7 @@ export const usePlayerStore = create<{
   trustChangeReason: undefined,
   consecutiveUtilitarian: 0,
   hasEnlightenment: false,
+  isAtHome: true,
 
   addInfluence: (text: string, intensity?: Intensity, targetActionId?: string) => {
     const resolvedIntensity = intensity ?? 'normal';
@@ -144,6 +147,10 @@ export const usePlayerStore = create<{
     }));
   },
 
+  setAtHome: (atHome: boolean) => {
+    set({ isAtHome: atHome });
+  },
+
   reset: () => {
     set({
       influences: [],
@@ -152,6 +159,7 @@ export const usePlayerStore = create<{
       trustChangeReason: undefined,
       consecutiveUtilitarian: 0,
       hasEnlightenment: false,
+      isAtHome: true,
     });
   },
 }));

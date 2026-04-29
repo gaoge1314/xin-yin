@@ -43,6 +43,22 @@ export const START_AGE = 27;
 export const END_AGE = 35;
 export const START_YEAR = 2025;
 
+export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export const DAY_OF_WEEK_LABELS: Record<DayOfWeek, string> = {
+  0: '周四',
+  1: '周五',
+  2: '周六',
+  3: '周日',
+  4: '周一',
+  5: '周二',
+  6: '周三',
+};
+
+export function getDayOfWeek(totalDays: number): DayOfWeek {
+  return (totalDays % 7) as DayOfWeek;
+}
+
 export function getYear(age: number): number {
   return START_YEAR + (age - START_AGE);
 }
