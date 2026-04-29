@@ -12,12 +12,14 @@ import { EveningMonologue } from '../narrative/EveningMonologue';
 import { DreamFragment } from '../narrative/DreamFragment';
 import { NarrativeDisplay } from '../narrative/NarrativeDisplay';
 import { WorldEventModal } from './WorldEventModal';
+import { NpcDialogModal } from './NpcDialogModal';
 import { TaskPanel } from './TaskPanel';
 import { CollapsiblePanel } from '../ui/CollapsiblePanel';
 import { gameLoop } from '../../systems/gameLoop';
 import { useTimeStore } from '../../stores/useTimeStore';
 import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
 import { useWorldEventStore } from '../../stores/useWorldEventStore';
+import { useNpcStore } from '../../stores/useNpcStore';
 import { TIME_OF_DAY_LABELS } from '../../types/time';
 
 type PhaseUI = 'morning-ritual' | 'daytime' | 'evening-monologue' | 'dream-fragment' | 'default';
@@ -40,17 +42,21 @@ export const CoreGameLoop: React.FC = () => {
 
       if (phaseTransition === 'MORNING') {
         setCurrentPhaseUI('morning-ritual');
-        useTimeStore.getState().togglePause();
+        useTimeStore.getState().pause('morning-ritual');
       } else if (phaseTransition === 'EVENING') {
         setCurrentPhaseUI('evening-monologue');
-        useTimeStore.getState().togglePause();
+        useTimeStore.getState().pause('evening-monologue');
       } else if (phaseTransition === 'SLEEP') {
         setCurrentPhaseUI('dream-fragment');
+        useTimeStore.getState().pause('dream-fragment');
       } else {
         const timeOfDay = useTimeStore.getState().getTimeOfDay();
         if (timeOfDay === 'DAYTIME') {
           setCurrentPhaseUI('daytime');
           setInputExpanded(false);
+          useTimeStore.getState().resume('morning-ritual');
+          useTimeStore.getState().resume('evening-monologue');
+          useTimeStore.getState().resume('dream-fragment');
         } else if (currentPhaseUI !== 'default') {
           setCurrentPhaseUI('default');
           setInputExpanded(true);
@@ -62,9 +68,40 @@ export const CoreGameLoop: React.FC = () => {
   }, [currentPhaseUI]);
 
   const timeOfDay = useTimeStore((s) => s.getTimeOfDay());
-  const activeEvent = useWorldEventStore.getState().getActiveEvent();
+  const activeEvent = useWorldEventStore((s) => s.activeEventId)
+    ? useWorldEventStore.getState().getActiveEvent()
+    : null;
+  const activeNpcDialog = useNpcStore((s) => s.activeNpcDialog);
+
+  useEffect(() => {
+    if (activeEvent && activeEvent.choices && activeEvent.choices.length > 0) {
+      useTimeStore.getState().pause('world-event');
+    } else {
+      useTimeStore.getState().resume('world-event');
+    }
+  }, [activeEvent?.id]);
+
+  useEffect(() => {
+    if (activeNpcDialog) {
+      useTimeStore.getState().pause('npc-dialog');
+    } else {
+      useTimeStore.getState().resume('npc-dialog');
+    }
+  }, [activeNpcDialog?.eventId]);
 
   const renderPhaseOverlay = () => {
+    if (activeNpcDialog) {
+      return (
+        <NpcDialogModal
+          dialog={activeNpcDialog}
+          onDismiss={() => {
+            useNpcStore.getState().dismissActiveDialog();
+            useNpcStore.getState().processNextDialog();
+          }}
+        />
+      );
+    }
+
     if (activeEvent && activeEvent.choices && activeEvent.choices.length > 0) {
       return (
         <WorldEventModal

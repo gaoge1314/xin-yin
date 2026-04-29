@@ -24,6 +24,11 @@ export const MorningRitual: React.FC = () => {
   const recentPainful = memories.filter((m) => m.type === 'painful' && !m.isHealed).length;
   const recentHealed = memories.filter((m) => m.isHealed).length;
 
+  const finishMorningRitual = () => {
+    useDayPhaseStore.getState().markMorningRitualDone();
+    useTimeStore.getState().resume('morning-ritual');
+  };
+
   const handleNext = () => {
     setStep('guide');
   };
@@ -33,7 +38,7 @@ export const MorningRitual: React.FC = () => {
       setInput('...');
     }
     addNarrativeLog(`清晨——${input.trim() || '...'}`);
-    useDayPhaseStore.getState().markMorningRitualDone();
+    finishMorningRitual();
   };
 
   if (step === 'review') {
@@ -113,7 +118,7 @@ export const MorningRitual: React.FC = () => {
         <button
           onClick={() => {
             addNarrativeLog('清晨——他默默地开始了新的一天。');
-            useDayPhaseStore.getState().markMorningRitualDone();
+            finishMorningRitual();
           }}
           className="text-white/20 text-xs hover:text-white/30 transition-colors duration-300"
         >

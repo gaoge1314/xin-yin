@@ -80,6 +80,10 @@ class GameLoopManager {
       this.dailyDecision();
     }
 
+    if (this.totalHours % 6 === 0) {
+      this.hourlyNpcCheck();
+    }
+
     if (this.totalHours % 720 === 0) {
       this.tickSkillCooldowns();
     }
@@ -164,7 +168,7 @@ class GameLoopManager {
     useNpcStore.getState().checkIntroductions();
     const npcEvents = useNpcStore.getState().checkEvents();
     npcEvents.forEach((event) => {
-      useNpcStore.getState().triggerEvent(event);
+      useNpcStore.getState().triggerEventAsDialog(event);
     });
 
     const worldEvents = useWorldEventStore.getState().checkEvents();
@@ -768,14 +772,18 @@ class GameLoopManager {
     for (const freq of frequencies) {
       const events = useNpcStore.getState().getFamilyEventByFrequency(freq as import('../types/npc').NpcEventFrequency);
       events.forEach((event) => {
-        useNpcStore.getState().triggerEvent(event);
+        useNpcStore.getState().triggerEventAsDialog(event);
       });
     }
 
     const connectionGatedEvents = useNpcStore.getState().checkConnectionGatedEvents();
     connectionGatedEvents.forEach((event) => {
-      useNpcStore.getState().triggerEvent(event);
+      useNpcStore.getState().triggerEventAsDialog(event);
     });
+  }
+
+  private hourlyNpcCheck() {
+    useNpcStore.getState().checkHourlyNpcEvents();
   }
 
   private weeklyUpdate() {
@@ -788,12 +796,12 @@ class GameLoopManager {
 
     const weeklyFamilyEvents = useNpcStore.getState().getFamilyEventByFrequency('weekly');
     weeklyFamilyEvents.forEach((event) => {
-      useNpcStore.getState().triggerEvent(event);
+      useNpcStore.getState().triggerEventAsDialog(event);
     });
 
     const biweeklyFamilyEvents = useNpcStore.getState().getFamilyEventByFrequency('biweekly');
     biweeklyFamilyEvents.forEach((event) => {
-      useNpcStore.getState().triggerEvent(event);
+      useNpcStore.getState().triggerEventAsDialog(event);
     });
   }
 

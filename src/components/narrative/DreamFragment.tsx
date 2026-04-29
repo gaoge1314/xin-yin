@@ -1,6 +1,7 @@
 import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
 import { useGameStore } from '../../stores/useGameStore';
 import { useSceneStore } from '../../stores/useSceneStore';
+import { useTimeStore } from '../../stores/useTimeStore';
 
 const DREAM_FRAGMENTS = [
   '模糊的面孔在水中扭曲...',
@@ -28,6 +29,7 @@ export const DreamFragment: React.FC = () => {
   const handleDismiss = () => {
     addNarrativeLog('梦终究散去了...');
     useDayPhaseStore.getState().markDreamFragmentShown();
+    useTimeStore.getState().resume('dream-fragment');
   };
 
   return (

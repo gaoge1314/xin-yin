@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useSceneStore } from '../../stores/useSceneStore';
+import { useTimeStore } from '../../stores/useTimeStore';
 import { TIME_OF_DAY_LABELS } from '../../types/time';
 
 interface MonologueLine {
@@ -57,6 +58,11 @@ export const EveningMonologue: React.FC = () => {
     setTimeout(() => setVisibleLines((v) => v + 1), 1500);
   }
 
+  const finishEveningMonologue = () => {
+    useDayPhaseStore.getState().markEveningMonologueShown();
+    useTimeStore.getState().resume('evening-monologue');
+  };
+
   const handleResponse = (option: typeof RESPONSE_OPTIONS[number]) => {
     if (selectedResponse) return;
     setSelectedResponse(option.text);
@@ -66,7 +72,7 @@ export const EveningMonologue: React.FC = () => {
 
   const handleNoResponse = () => {
     addNarrativeLog('夜——他独自收起了思绪。');
-    useDayPhaseStore.getState().markEveningMonologueShown();
+    finishEveningMonologue();
   };
 
   const allLinesShown = visibleCount >= monologueGroup.length;
@@ -128,7 +134,7 @@ export const EveningMonologue: React.FC = () => {
         {selectedResponse && (
           <div className="text-center">
             <button
-              onClick={() => useDayPhaseStore.getState().markEveningMonologueShown()}
+              onClick={finishEveningMonologue}
               className="
                 px-4 py-2 border border-white/10 rounded text-white/40 text-sm
                 hover:border-white/20 hover:text-white/60

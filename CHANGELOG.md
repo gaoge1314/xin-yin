@@ -1,23 +1,83 @@
 # 更新日志
 
+## [v4.5] - 2026-04-29
+
+### 新增功能
+
+#### 时间暂停系统
+- 新增时间暂停/继续按钮，不限次数使用
+- 暂停按钮显示 ⏸/▶ 图标，暂停时高亮显示
+- 支持多原因叠加暂停机制，多个系统可以同时暂停时间
+
+#### 智能暂停原因追踪
+- `pauseReasons` 系统：追踪多个暂停来源
+  - `morning-ritual` — 晨间仪式
+  - `evening-monologue` — 晚间独白
+  - `dream-fragment` — 梦境碎片
+  - `world-event` — 世界事件选择
+  - `npc-dialog` — NPC 对话
+  - `input-focus` — 输入框聚焦
+  - `manual` — 手动暂停
+- 时间恢复机制：只有当所有暂停原因都解除后，时间才会继续流动
+
+#### NPC 对话弹窗系统
+- 新增 `NpcDialogModal` 组件：展示 NPC 名字、描述、对话内容
+- 对话队列系统：支持多个 NPC 对话排队依次展示
+- 时间自动暂停：NPC 对话弹出时自动暂停时间，玩家点击"继续"后恢复
+- 对话效果处理：-dismiss 时应用对话效果 (信任度/意志力/认知/脏腑)
+
+#### 增强 NPC 事件推送频率
+- 新增每 6 小时一次的 NPC 事件检查 (`hourlyNpcCheck`)
+- 白天时段 (7-21 时) 15% 概率触发随机 NPC 对话
+- 避免重复：检查对话队列和叙事日志，防止同一事件重复弹出
+- 所有 NPC 事件改为弹窗展示，不再静默添加到日志
+
+### Bug 修复
+
+#### 修复对话框弹出时时间不暂停
+- **问题根因**：`CoreGameLoop` 中使用 `togglePause()` 切换暂停，但 `checkDayPhaseTransition()` 每秒调用一次，如果仪式未完成会反复返回 'MORNING'，导致 `togglePause()` 被多次调用，暂停状态被反复开关
+- **修复方案**：
+  - `useTimeStore` 新增 `pause(reason)` / `resume(reason)` 方法
+  - `CoreGameLoop` 改用 `pause()` / `resume()` 替代 `togglePause()`
+  - `MorningRitual` / `EveningMonologue` / `DreamFragment` 完成时调用 `resume()`
+  - `WorldEventModal` 选择后自动恢复时间
+  - `NpcDialogModal` 关闭时自动恢复时间
+
+### 文件变更
+
+#### 新增文件
+- `src/components/game/NpcDialogModal.tsx` - NPC 对话弹窗组件
+
+#### 修改文件
+- `src/stores/useTimeStore.ts` - 新增 `pauseReasons` 状态、`pause()` / `resume()` 方法、原因追踪机制
+- `src/components/game/CoreGameLoop.tsx` - 改用 `pause()` / `resume()`，集成 `NpcDialogModal`，添加 `activeNpcDialog` 监听
+- `src/components/game/MorningRitual.tsx` - 完成时调用 `resume('morning-ritual')`
+- `src/components/narrative/EveningMonologue.tsx` - 完成时调用 `resume('evening-monologue')`
+- `src/components/narrative/DreamFragment.tsx` - 完成时调用 `resume('dream-fragment')`
+- `src/components/game/PauseButton.tsx` - 新增暂停/继续按钮
+- `src/stores/useNpcStore.ts` - 新增 `activeNpcDialog`、`pendingDialogs`、`triggerEventAsDialog()`、`dismissActiveDialog()`、`processNextDialog()`、`checkHourlyNpcEvents()`
+- `src/systems/gameLoop.ts` - NPC 事件改用 `triggerEventAsDialog()`，新增 `hourlyNpcCheck()` 每 6 小时检查
+
+---
+
 ## [v4.4] - 2026-04-29
 
 ### 新增功能
 
 #### 家庭系统
-- 4名核心家庭成员NPC：父亲(61岁脑梗后)、母亲(58岁无业)、姐姐(35岁北大医院主治医)、可可(4岁外甥女)
-- 父亲事件：沉默观察(每日)、饭桌叹气(每周)、突然问话(每月)、脑梗复发(剧情触发)
-- 母亲事件：催吃饭/催起床(每日)、问冷暖/无意比较(每周)、崩溃争吵(状态触发)
-- 姐姐事件：发招聘(每周)、谈心(双周)、和父母争吵(每月)、透露不快乐(连接度≥60触发)
-- 可可事件：周末来玩(双周)、童言无忌(每月)
+- 4 名核心家庭成员 NPC：父亲 (61 岁脑梗后)、母亲 (58 岁无业)、姐姐 (35 岁北大医院主治医)、可可 (4 岁外甥女)
+- 父亲事件：沉默观察 (每日)、饭桌叹气 (每周)、突然问话 (每月)、脑梗复发 (剧情触发)
+- 母亲事件：催吃饭/催起床 (每日)、问冷暖/无意比较 (每周)、崩溃争吵 (状态触发)
+- 姐姐事件：发招聘 (每周)、谈心 (双周)、和父母争吵 (每月)、透露不快乐 (连接度≥60 触发)
+- 可可事件：周末来玩 (双周)、童言无忌 (每月)
 - 家庭成员亲密度追踪与连接度门槛事件
 
-#### 2025-2035宏观事件时间线
-- 第一阶段存量博弈期(2025-2026)：AI替代初级白领、考研人数突破500万、经济深度转型、考公人数新高
-- 第二阶段结构调整期(2027-2029)：AI进入中端岗位、人口负增长影响、中美科技脱钩、供应链重组
-- 第三阶段新常态形成期(2030-2032)：AI+人协作主流、社保体系改革、台海局势节点、UBI试点讨论
-- 第四阶段终局期(2033-2035)：新生产力范式形成、价值观代际分化
-- 每个事件含传导链条描述，选择结果实际影响游戏状态(意志力/认知/五脏)
+#### 2025-2035 宏观事件时间线
+- 第一阶段存量博弈期 (2025-2026)：AI 替代初级白领、考研人数突破 500 万、经济深度转型、考公人数新高
+- 第二阶段结构调整期 (2027-2029)：AI 进入中端岗位、人口负增长影响、中美科技脱钩、供应链重组
+- 第三阶段新常态形成期 (2030-2032)：AI+人协作主流、社保体系改革、台海局势节点、UBI 试点讨论
+- 第四阶段终局期 (2033-2035)：新生产力范式形成、价值观代际分化
+- 每个事件含传导链条描述，选择结果实际影响游戏状态 (意志力/认知/五脏)
 
 #### 双轨任务系统
 - 世界任务轨道：外部推送的任务，可完成/推迟/拒绝
@@ -26,43 +86,43 @@
 - 完成率统计影响结局走向
 
 #### 开场"前因"回忆模式
-- 玩家选择放手时进入前因模式，展示9条核心记忆片段
+- 玩家选择放手时进入前因模式，展示 9 条核心记忆片段
 - 终末显示"心印从未消失。你愿意再试一次吗？"
 - 选择"再试一次"回到开场天台场景
 
 #### 时间年份映射
-- 游戏时间映射到真实年份：2025年春=游戏开始
-- 宏观事件按年份+季节触发
+- 游戏时间映射到真实年份：2025 年春=游戏开始
+- 宏观事件按年份 + 季节触发
 
 ### 新增记忆脚本
-- 剧本24"姐姐的选择"：姐姐考大学时被迫选理科的往事
-- 剧本25"父亲倒下那天"：父亲脑梗那天赶赴医院的场景
-- 剧本26"可可出生"：2021年去医院看姐姐和新生可可的场景
+- 剧本 24"姐姐的选择"：姐姐考大学时被迫选理科的往事
+- 剧本 25"父亲倒下那天"：父亲脑梗那天赶赴医院的场景
+- 剧本 26"可可出生"：2021 年去医院看姐姐和新生可可的场景
 
 ### 文件变更
 
 #### 新增文件
 - `src/types/task.ts` - 双轨任务类型定义
-- `src/stores/useTaskStore.ts` - 任务系统Store
-- `src/components/game/TaskPanel.tsx` - 双轨任务面板UI
+- `src/stores/useTaskStore.ts` - 任务系统 Store
+- `src/components/game/TaskPanel.tsx` - 双轨任务面板 UI
 - `src/components/game/CauseModeScene.tsx` - 前因回忆模式场景
 
 #### 修改文件
-- `src/types/npc.ts` - NpcKey扩展、FamilyRole、NpcEventFrequency、organChange支持
-- `src/types/event.ts` - year/seasonInYear/source/taskType/transmissionChain字段
-- `src/types/time.ts` - currentYear字段、START_YEAR常量、getYear函数
-- `src/types/save.ts` - GamePhase增加prologue-cause阶段
-- `src/data/npcs/initialNpcs.ts` - 完全重写为4名家庭成员
-- `src/data/events/worldEvents.ts` - 14个宏观事件覆盖2025-2034年
-- `src/data/memories/memoryScripts.ts` - 新增3条家庭向记忆
+- `src/types/npc.ts` - NpcKey 扩展、FamilyRole、NpcEventFrequency、organChange 支持
+- `src/types/event.ts` - year/seasonInYear/source/taskType/transmissionChain 字段
+- `src/types/time.ts` - currentYear 字段、START_YEAR 常量、getYear 函数
+- `src/types/save.ts` - GamePhase 增加 prologue-cause 阶段
+- `src/data/npcs/initialNpcs.ts` - 完全重写为 4 名家庭成员
+- `src/data/events/worldEvents.ts` - 14 个宏观事件覆盖 2025-2034 年
+- `src/data/memories/memoryScripts.ts` - 新增 3 条家庭向记忆
 - `src/stores/useNpcStore.ts` - getFamilyMembers/getFamilyEventByFrequency/checkConnectionGatedEvents
-- `src/stores/useTimeStore.ts` - currentYear同步更新
-- `src/stores/useWorldEventStore.ts` - 年份条件检测、StateEffect实际应用
-- `src/stores/useGameStore.ts` - currentYear初始值
+- `src/stores/useTimeStore.ts` - currentYear 同步更新
+- `src/stores/useWorldEventStore.ts` - 年份条件检测、StateEffect 实际应用
+- `src/stores/useGameStore.ts` - currentYear 初始值
 - `src/systems/gameLoop.ts` - 任务系统集成、家庭事件频率检查、年份触发
 - `src/components/game/SceneController.tsx` - 前因模式流程
-- `src/components/game/CoreGameLoop.tsx` - TaskPanel集成
-- `src/App.tsx` - prologue-cause路由
+- `src/components/game/CoreGameLoop.tsx` - TaskPanel 集成
+- `src/App.tsx` - prologue-cause 路由
 - `src/types/index.ts` - 新类型导出
 
 ---
@@ -76,8 +136,8 @@
 - 入梦采信率公式：基础 15% + (连接度/100 × 55%)，封顶 70%
 - 认知转化概率受连接度影响：基础 50% + (连接度/100 × 50%)
 - 龙场悟道连接度前提：连接度 < 30 时降级为部分体验
-- 高连接度(≥80)时 15% 概率触发主角主动求助
-- 低连接度(<20)时主角冷淡回应玩家输入
+- 高连接度 (≥80) 时 15% 概率触发主角主动求助
+- 低连接度 (<20) 时主角冷淡回应玩家输入
 
 #### 时段驱动差异化交互
 - 新增 `TimeOfDay` 枚举：MORNING / DAYTIME / EVENING / SLEEP
@@ -93,7 +153,7 @@
 - 结局场景组件 `EndingScene`：展示结局叙事与八年回顾数据
 
 #### 配角系统
-- 4 个关键 NPC：母亲、老刘(同事)、小陈(同事)、阿明(老友)
+- 4 个关键 NPC：母亲、老刘 (同事)、小陈 (同事)、阿明 (老友)
 - NPC 介绍触发：按天数和季节自动引入
 - NPC 事件系统：每个 NPC 有独立事件链，影响信任度和意志力
 - NPC 亲密度追踪

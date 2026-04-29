@@ -16,6 +16,8 @@ interface TimeActions {
   setInputFocused: (focused: boolean) => void;
   setSpeed: (speed: 1 | 2 | 4) => void;
   togglePause: () => void;
+  pause: (reason: string) => void;
+  resume: (reason: string) => void;
   getTimeOfDay: () => TimeOfDay;
   getCurrentYear: () => number;
   reset: () => void;
@@ -33,8 +35,9 @@ const initialState: TimeState = {
   currentYear: START_YEAR,
 };
 
-export const useTimeStore = create<TimeState & TimeActions>((set, get) => ({
+export const useTimeStore = create<TimeState & TimeActions & { pauseReasons: Record<string, boolean> }>((set, get) => ({
   ...initialState,
+  pauseReasons: {},
 
   advanceTime: () => {
     const state = get();
@@ -75,9 +78,11 @@ export const useTimeStore = create<TimeState & TimeActions>((set, get) => ({
 
   setInputFocused: (focused: boolean) => {
     if (focused) {
-      set({ isInputFocused: true, isPaused: true });
+      get().pause('input-focus');
+      set({ isInputFocused: true });
     } else {
-      set({ isInputFocused: false, isPaused: false });
+      set({ isInputFocused: false });
+      get().resume('input-focus');
     }
   },
 
@@ -86,7 +91,33 @@ export const useTimeStore = create<TimeState & TimeActions>((set, get) => ({
   },
 
   togglePause: () => {
-    set((state) => ({ isPaused: !state.isPaused }));
+    const state = get();
+    if (state.isPaused) {
+      const reasons = Object.keys(state.pauseReasons);
+      const hasOnlyManual = reasons.length === 0 || (reasons.length === 1 && reasons[0] === 'manual');
+      if (hasOnlyManual) {
+        set({ isPaused: false, pauseReasons: {} });
+      }
+    } else {
+      const newReasons = { ...state.pauseReasons, manual: true };
+      set({ isPaused: true, pauseReasons: newReasons });
+    }
+  },
+
+  pause: (reason: string) => {
+    set((state) => {
+      const newReasons = { ...state.pauseReasons, [reason]: true };
+      return { pauseReasons: newReasons, isPaused: true };
+    });
+  },
+
+  resume: (reason: string) => {
+    set((state) => {
+      const newReasons = { ...state.pauseReasons };
+      delete newReasons[reason];
+      const stillPaused = Object.values(newReasons).some((v) => v);
+      return { pauseReasons: newReasons, isPaused: stillPaused };
+    });
   },
 
   getTimeOfDay: () => {
@@ -98,6 +129,6 @@ export const useTimeStore = create<TimeState & TimeActions>((set, get) => ({
   },
 
   reset: () => {
-    set(initialState);
+    set({ ...initialState, pauseReasons: {} });
   },
 }));

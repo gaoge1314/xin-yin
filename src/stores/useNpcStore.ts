@@ -17,10 +17,20 @@ const FREQUENCY_DAYS: Record<NpcEventFrequency, number> = {
   trigger: Infinity,
 };
 
+export interface NpcDialogEntry {
+  npcId: NpcKey;
+  npcName: string;
+  npcDescription?: string;
+  content: string;
+  eventId: string;
+  effect?: NpcEvent['effect'];
+}
+
 interface NpcActions {
   checkIntroductions: () => Npc[];
   checkEvents: () => NpcEvent[];
   triggerEvent: (event: NpcEvent) => void;
+  triggerEventAsDialog: (event: NpcEvent) => void;
   adjustCloseness: (npcId: NpcKey, delta: number) => void;
   getIntroducedNpcs: () => Npc[];
   getNpc: (npcId: NpcKey) => Npc | undefined;
@@ -28,12 +38,19 @@ interface NpcActions {
   getFamilyMembers: () => Npc[];
   getFamilyEventByFrequency: (frequency: NpcEventFrequency) => NpcEvent[];
   checkConnectionGatedEvents: () => NpcEvent[];
+  dismissActiveDialog: () => void;
+  processNextDialog: () => void;
+  checkHourlyNpcEvents: () => void;
 }
 
 export const useNpcStore = create<{
   npcs: Npc[];
+  activeNpcDialog: NpcDialogEntry | null;
+  pendingDialogs: NpcDialogEntry[];
 } & NpcActions>((set, get) => ({
   npcs: [...INITIAL_NPCS],
+  activeNpcDialog: null,
+  pendingDialogs: [],
 
   checkIntroductions: (): Npc[] => {
     const timeState = useTimeStore.getState();
@@ -145,6 +162,79 @@ export const useNpcStore = create<{
     }
   },
 
+  triggerEventAsDialog: (event: NpcEvent) => {
+    const npcId = event.id.split('_')[0] as NpcKey;
+    const npc = get().getNpc(npcId);
+
+    const dialogEntry: NpcDialogEntry = {
+      npcId,
+      npcName: npc?.name || '未知',
+      npcDescription: npc?.description,
+      content: event.content,
+      eventId: event.id,
+      effect: event.effect,
+    };
+
+    const state = get();
+    if (!state.activeNpcDialog) {
+      set({ activeNpcDialog: dialogEntry });
+    } else {
+      set((s) => ({
+        pendingDialogs: [...s.pendingDialogs, dialogEntry],
+      }));
+    }
+  },
+
+  dismissActiveDialog: () => {
+    const state = get();
+    const dialog = state.activeNpcDialog;
+    if (!dialog) return;
+
+    useSceneStore.getState().addNarrativeLog(dialog.content);
+
+    if (dialog.effect) {
+      if (dialog.effect.trustChange) {
+        usePlayerStore.getState().adjustTrust(
+          dialog.effect.trustChange,
+          `npc_event_${dialog.eventId}`
+        );
+      }
+      if (dialog.effect.willpowerChange) {
+        const willpowerState = useWillpowerStore.getState();
+        if (dialog.effect.willpowerChange > 0) {
+          willpowerState.recover(dialog.effect.willpowerChange);
+        } else {
+          willpowerState.consume(Math.abs(dialog.effect.willpowerChange));
+        }
+      }
+      if (dialog.effect.cognitionUnlock) {
+        useCognitionStore.getState().unlockCognition(
+          dialog.effect.cognitionUnlock as any
+        );
+      }
+      if (dialog.effect.organChange) {
+        const organEntries = Object.entries(dialog.effect.organChange);
+        organEntries.forEach(([organ, change]) => {
+          useOrganStore.getState().updateOrgan({
+            organ: organ as any,
+            change: change ?? 0,
+            reason: `npc_event_${dialog.eventId}`,
+          });
+        });
+      }
+    }
+
+    set({ activeNpcDialog: null });
+  },
+
+  processNextDialog: () => {
+    const state = get();
+    if (state.pendingDialogs.length > 0) {
+      const [next, ...rest] = state.pendingDialogs;
+      set({ activeNpcDialog: next, pendingDialogs: rest });
+    }
+  },
+
   adjustCloseness: (npcId: NpcKey, delta: number) => {
     set((state) => ({
       npcs: state.npcs.map((npc) => {
@@ -166,7 +256,7 @@ export const useNpcStore = create<{
   },
 
   reset: () => {
-    set({ npcs: [...INITIAL_NPCS] });
+    set({ npcs: [...INITIAL_NPCS], activeNpcDialog: null, pendingDialogs: [] });
   },
 
   getFamilyMembers: (): Npc[] => {
@@ -218,5 +308,45 @@ export const useNpcStore = create<{
     });
 
     return gated;
+  },
+
+  checkHourlyNpcEvents: () => {
+    const timeState = useTimeStore.getState();
+    const hour = timeState.hour;
+
+    if (hour < 7 || hour > 21) return;
+
+    const introducedNpcs = get().npcs.filter((npc) => npc.isIntroduced);
+    const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+    const day = timeState.totalDays;
+
+    for (const npc of introducedNpcs) {
+      for (const event of npc.events) {
+        if (day < event.triggerDay) continue;
+
+        const frequency = event.frequency ?? 'trigger';
+        if (frequency === 'trigger') continue;
+
+        const interval = FREQUENCY_DAYS[frequency];
+        const daysSinceTrigger = day - event.triggerDay;
+        if (daysSinceTrigger < 0) continue;
+        if (daysSinceTrigger % interval !== 0) continue;
+
+        if (event.minConnectionLevel !== undefined && connectionLevel < event.minConnectionLevel) continue;
+
+        const alreadyInDialog = get().activeNpcDialog?.eventId === event.id;
+        const alreadyInPending = get().pendingDialogs.some(d => d.eventId === event.id);
+        const alreadyInLog = useSceneStore.getState().narrativeLog.some(
+          (log) => log.includes(event.content.substring(0, 20))
+        );
+
+        if (alreadyInDialog || alreadyInPending || alreadyInLog) continue;
+
+        if (Math.random() < 0.15) {
+          get().triggerEventAsDialog(event);
+          break;
+        }
+      }
+    }
   },
 }));
