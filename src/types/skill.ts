@@ -19,14 +19,28 @@ export interface DreamVision {
   interpretationHint?: string;
 }
 
+export type MemoryCategory =
+  | 'name'
+  | 'emotion'
+  | 'resentment'
+  | 'fear'
+  | 'obsession'
+  | 'beauty'
+  | 'special';
+
 export interface Memory {
   id: string;
   type: 'good' | 'painful';
+  title: string;
+  category: MemoryCategory;
   content: string;
+  innerVoice: string;
   season: import('./time').Season;
   age: number;
   isHealed: boolean;
   keywords: string[];
+  dustName?: string;
+  isCore?: boolean;
 }
 
 export const RECALL_COOLDOWN = 1;

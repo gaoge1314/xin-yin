@@ -1,73 +1,111 @@
-# React + TypeScript + Vite
+# 心印回响
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一款基于 React + TypeScript 的内心探索游戏，通过回忆突现机制，让玩家陪伴主角面对内心的灰尘，寻找心印的觉醒。
 
-Currently, two official plugins are available:
+## 游戏简介
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+你是一个名为"心印"的存在，寄宿在主角白明泽的意识深处。他曾是一名警校学生，经历了督导压迫、考研失败、自我欺骗、存在迷茫……他的内心积满了灰尘——"我必须被人看得起""没人真正爱我""都是你们害的""我不能失败""我必须成为什么"。
 
-## React Compiler
+你的任务，是陪伴他面对这些灰尘，在回忆突现中找到治愈的可能，最终走向龙场悟道——**知是行之始，行是知之成**。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 核心机制
 
-## Expanding the ESLint configuration
+### 五脏系统
+心、肝、脾、肺、胃——五脏健康反映主角的精神状态，受损时影响行动选择和意志力恢复。
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 意志力系统
+意志力是主角行动的核心资源，消耗后需要通过睡眠、美好回忆、锚点激活等方式恢复。意志力耗尽时进入抑郁状态。
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 认知转化系统
+七种扭曲认知（自我否定、无意义感、虚伪感、失败恐惧、关系障碍、幸福障碍、学习障碍）可通过正向反馈逐步转化。
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 回忆突现系统
+- **23 个回忆剧本**，分为七大分类：名、情、怨、惧、我执、光、悟
+- **季节性触发**：换季时随机浮现对应季节的记忆
+- **情绪触发**：日常行动的关键词匹配触发痛苦回忆，消耗意志力、损伤脏腑
+- **锚点触发**：正向记忆匹配关键词时激活锚点，恢复意志力、推进认知转化
+- **回忆技能**：主动面对痛苦记忆（需玩家输入匹配关键词），或召唤温暖记忆恢复精神
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 群则系统
+主角内心被植入的社会规则——"压迫性世界""功利关系""面具生存"，影响行动选择权重。
+
+### 心印锚点
+8 个心印锚点，代表主角内心深处的正向力量：数学的快乐、知行合一的顿悟、新月的精神感染、猫的选择、自己找到的意义、一个人在走路、新月与告别、对师弟师妹说的话。
+
+### 龙场悟道
+游戏高潮事件——当条件满足时，主角进入顿悟三阶段（下坠→扫尘→觉醒），面对所有灰尘，最终说出"知是行之始，行是知之成"。
+
+### 调试模式
+按 `Ctrl+D` 打开调试面板，可实时调整所有游戏参数、触发事件、快进剧本。
+
+## 回忆剧本目录
+
+### 一、名——"我必须被人看得起"的灰尘
+| # | 标题 | 类型 | 核心记忆 |
+|---|------|------|---------|
+| 01 | ⭐ 纸条游戏 | 痛苦 | 撕掉最后一张纸条时，生命与意义的终极追问 |
+| 02 | 父亲的背影 | 痛苦 | 考研三次失败后，父亲沉默的背影 |
+| 03 | 同学聚会 | 痛苦 | 同出穷乡僻壤，一个大展宏图，一个畏畏缩缩 |
+| 04 | 站岗的意义 | 美好 | 自己找到了站岗的意义——确保那种可能性不会发生 |
+
+### 二、情——"没人真正爱我/我不配被爱"的灰尘
+| # | 标题 | 类型 | 核心记忆 |
+|---|------|------|---------|
+| 05 | ⭐ 自作多情 | 痛苦 | 怯懦让我不敢向女生说话，最终只是自我欺骗 |
+| 06 | ⭐ 新月与告别 | 美好 | 她的精神感染了我，考研结束就是告别 |
+| 07 | 高中之后，我失去了共情 | 痛苦 | 沉迷游戏后，戾气由内而外散发 |
+| 08 | 梦里的王一凡 | 痛苦 | 所有种种好像都是我自己的幻想，从未了解过她 |
+
+### 三、怨——"都是你们害的"的灰尘
+| # | 标题 | 类型 | 核心记忆 |
+|---|------|------|---------|
+| 09 | ⭐⭐ 督导扣分事件 | 痛苦 | 一个人干了十个人的活，写错一个字被罚——"狗妖"意象的来源 |
+| 10 | 政委打压 | 痛苦 | 那不是检讨，是自我阉割 |
+| 11 | 搬行李事件 | 痛苦 | 人心就是这样被消耗掉的 |
+| 12 | 加班费与国家大义 | 痛苦 | 你扯什么国家大义？损害国家利益的还不知道是谁 |
+
+### 四、惧——"我不能失败"的灰尘
+| # | 标题 | 类型 | 核心记忆 |
+|---|------|------|---------|
+| 13 | ⭐ 高中迷失 | 痛苦 | 一遇挫折便松懈怠慢，所有逃避模式的起点 |
+| 14 | 考研机器 | 痛苦 | 做自己曾经最不屑于干的事，把别人嚼过的馒头又嚼了十几遍 |
+| 15 | 水面下的猫 | 痛苦 | 活路就在眼前，可我就不去——最深刻的处境隐喻 |
+
+### 五、我执——"我必须成为什么"的灰尘
+| # | 标题 | 类型 | 核心记忆 |
+|---|------|------|---------|
+| 16 | ⭐ 为什么活着 | 痛苦 | 不知生为何意，还恐死时不甘。十年想不清，十年说不出 |
+| 17 | 知行合一的顿悟 | 美好 | 他不是在说你应该怎么做，他在说一个陈述事实 |
+| 18 | 我对师弟师妹说的话 | 美好 | 体验无产阶级的生活，比我少走十年弯路 |
+
+### 六、美好回忆——恢复精神力的微光
+| # | 标题 | 类型 | 核心记忆 |
+|---|------|------|---------|
+| 19 | ⭐ 初遇数学 | 美好 | 思维得到锻炼，像打了一场大胜仗——心印最早的锚点 |
+| 20 | 救猫得活 | 美好 | 救猫就是救自己，唯一的活路就是我想救猫 |
+| 21 | 新月的精神感染 | 美好 | 学习不必是折磨，可以是一种张弛有度的生活 |
+| 22 | 一个人在走路 | 美好 | 脑子里的声音渐渐安静，没有目标，只是走 |
+
+### 七、特殊记忆——与游戏机制深度绑定
+| # | 标题 | 类型 | 核心记忆 |
+|---|------|------|---------|
+| 23 | ⭐ 龙场悟道的扫尘场景 | 特殊 | 面对漂浮的灰尘文字，知是行之始，行是知之成 |
+
+## 技术栈
+
+- **React 19** + **TypeScript** + **Vite 8**
+- **Zustand** — 状态管理
+- **Tailwind CSS** — 样式
+
+## 开发
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 构建
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```

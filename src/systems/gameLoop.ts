@@ -119,9 +119,32 @@ class GameLoopManager {
     const seasonMemories = memories.filter((m) => m.season === season);
 
     if (seasonMemories.length > 0) {
-      const memory = seasonMemories[Math.floor(Math.random() * seasonMemories.length)];
+      const weighted = seasonMemories.map((m) => ({
+        memory: m,
+        weight: m.isCore ? 2 : 1,
+      }));
+      const totalWeight = weighted.reduce((sum, w) => sum + w.weight, 0);
+      let random = Math.random() * totalWeight;
+      let selected = weighted[0].memory;
+      for (const { memory, weight } of weighted) {
+        random -= weight;
+        if (random <= 0) {
+          selected = memory;
+          break;
+        }
+      }
+
+      const categoryLabels: Record<string, string> = {
+        name: '名', emotion: '情', resentment: '怨',
+        fear: '惧', obsession: '我执', beauty: '光', special: '悟',
+      };
+      const label = categoryLabels[selected.category] || '';
       useSceneStore.getState().addNarrativeLog(
-        `一段记忆浮现：${memory.content}`
+        `【${label}】${selected.title}`
+      );
+      useSceneStore.getState().addNarrativeLog(selected.content);
+      useSceneStore.getState().addNarrativeLog(
+        `——"${selected.innerVoice}"`
       );
     }
   }
@@ -598,9 +621,17 @@ class GameLoopManager {
   private checkEmotionTriggers(action: Action, outcome: Outcome) {
     const triggers = INITIAL_EMOTION_TRIGGERS;
     const actionKeywords: Record<string, string[]> = {
-      work_overtime: ['加班', '工作', '考核'],
-      numb_work: ['无意义', '机械', '重复'],
-      reflect: ['思考', '反思', '为什么'],
+      work_overtime: ['加班', '工作', '考核', '加班费', '国家大义'],
+      numb_work: ['无意义', '机械', '重复', '麻木', '机器'],
+      reflect: ['思考', '反思', '为什么', '意义', '活着'],
+      browse_phone: ['无聊', '逃避', '放松'],
+      play_games: ['游戏', '冷漠', '戾气', '负能量'],
+      walk_alone: ['走路', '独处', '安静', '放松'],
+      study: ['学习', '数学', '解题', '挫折', '松懈'],
+      socialize: ['喜欢', '表达', '不敢', '暗恋'],
+      exercise: ['运动', '锻炼', '身体'],
+      study_metaphysics: ['命理', '玄学', '宇宙', '规律'],
+      write_inner_monologue: ['写', '记录', '独白', '检讨'],
     };
 
     const keywords = actionKeywords[action.id] || [];

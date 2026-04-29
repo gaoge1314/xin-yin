@@ -158,13 +158,30 @@ export const FallingScene: React.FC<FallingSceneProps> = ({
             className="max-w-md p-6 bg-[#0a0a1a]/90 border border-white/10 rounded-lg animate-[slideUp_0.5s_ease-out]"
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`
+                text-xs px-2 py-0.5 rounded
+                ${activeFragment.type === 'good' ? 'bg-calm/20 text-calm/70' : 'bg-danger/20 text-danger/70'}
+              `}>
+                {{name:'名',emotion:'情',resentment:'怨',fear:'惧',obsession:'我执',beauty:'光',special:'悟'}[activeFragment.category]}
+              </span>
+              <span className={`
+                text-sm font-medium
+                ${activeFragment.type === 'good' ? 'text-calm/80' : 'text-danger/70'}
+              `}>
+                {activeFragment.title}
+              </span>
+            </div>
             <p
               className={`
-                text-base leading-relaxed mb-4
+                text-base leading-relaxed mb-3
                 ${activeFragment.type === 'good' ? 'text-calm/80' : 'text-danger/70'}
               `}
             >
               {activeFragment.content}
+            </p>
+            <p className="text-white/40 text-sm italic mb-4">
+              "{activeFragment.innerVoice}"
             </p>
             <p className="text-white/30 text-xs text-right">
               {activeFragment.age}岁 · {activeFragment.season === 'spring' ? '春' : activeFragment.season === 'summer' ? '夏' : activeFragment.season === 'autumn' ? '秋' : '冬'}

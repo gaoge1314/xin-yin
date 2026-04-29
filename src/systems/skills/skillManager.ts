@@ -20,8 +20,19 @@ export function useRecallSkill() {
 
     if (type === 'good') {
       useWillpowerStore.getState().recover(20);
+      const categoryLabels: Record<string, string> = {
+        name: '名', emotion: '情', resentment: '怨',
+        fear: '惧', obsession: '我执', beauty: '光', special: '悟',
+      };
+      const label = categoryLabels[memory.category] || '';
+      useSceneStore.getState().addNarrativeLog(
+        `【${label}】${memory.title}`
+      );
       useSceneStore.getState().addNarrativeLog(
         `一段温暖的记忆浮上心头——${memory.content}`
+      );
+      useSceneStore.getState().addNarrativeLog(
+        `——"${memory.innerVoice}"`
       );
     } else {
       const keywordMatch = checkKeywordMatch(memory);
@@ -32,13 +43,27 @@ export function useRecallSkill() {
           ),
         }));
         useWillpowerStore.getState().recover(10);
+        const categoryLabels: Record<string, string> = {
+          name: '名', emotion: '情', resentment: '怨',
+          fear: '惧', obsession: '我执', beauty: '光', special: '悟',
+        };
+        const label = categoryLabels[memory.category] || '';
+        useSceneStore.getState().addNarrativeLog(
+          `【${label}】${memory.title}`
+        );
         useSceneStore.getState().addNarrativeLog(
           `那个伤痛的记忆，似乎没那么刺痛了。`
+        );
+        useSceneStore.getState().addNarrativeLog(
+          `——"${memory.innerVoice}"`
         );
       } else {
         useWillpowerStore.getState().consume(15);
         useSceneStore.getState().addNarrativeLog(
           `试图面对那段记忆，但还做不到。心更痛了。`
+        );
+        useSceneStore.getState().addNarrativeLog(
+          `——"${memory.innerVoice}"`
         );
       }
     }
