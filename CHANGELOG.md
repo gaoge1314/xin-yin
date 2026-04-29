@@ -1,5 +1,72 @@
 # 更新日志
 
+## [v4.4] - 2026-04-29
+
+### 新增功能
+
+#### 家庭系统
+- 4名核心家庭成员NPC：父亲(61岁脑梗后)、母亲(58岁无业)、姐姐(35岁北大医院主治医)、可可(4岁外甥女)
+- 父亲事件：沉默观察(每日)、饭桌叹气(每周)、突然问话(每月)、脑梗复发(剧情触发)
+- 母亲事件：催吃饭/催起床(每日)、问冷暖/无意比较(每周)、崩溃争吵(状态触发)
+- 姐姐事件：发招聘(每周)、谈心(双周)、和父母争吵(每月)、透露不快乐(连接度≥60触发)
+- 可可事件：周末来玩(双周)、童言无忌(每月)
+- 家庭成员亲密度追踪与连接度门槛事件
+
+#### 2025-2035宏观事件时间线
+- 第一阶段存量博弈期(2025-2026)：AI替代初级白领、考研人数突破500万、经济深度转型、考公人数新高
+- 第二阶段结构调整期(2027-2029)：AI进入中端岗位、人口负增长影响、中美科技脱钩、供应链重组
+- 第三阶段新常态形成期(2030-2032)：AI+人协作主流、社保体系改革、台海局势节点、UBI试点讨论
+- 第四阶段终局期(2033-2035)：新生产力范式形成、价值观代际分化
+- 每个事件含传导链条描述，选择结果实际影响游戏状态(意志力/认知/五脏)
+
+#### 双轨任务系统
+- 世界任务轨道：外部推送的任务，可完成/推迟/拒绝
+- 主角个人计划轨道：短期/中期/长期/内在追问，根据心印等级动态生成
+- 任务冲突检测：世界任务与个人计划冲突时标记，玩家可选择群则优先/心印优先/第三条路
+- 完成率统计影响结局走向
+
+#### 开场"前因"回忆模式
+- 玩家选择放手时进入前因模式，展示9条核心记忆片段
+- 终末显示"心印从未消失。你愿意再试一次吗？"
+- 选择"再试一次"回到开场天台场景
+
+#### 时间年份映射
+- 游戏时间映射到真实年份：2025年春=游戏开始
+- 宏观事件按年份+季节触发
+
+### 新增记忆脚本
+- 剧本24"姐姐的选择"：姐姐考大学时被迫选理科的往事
+- 剧本25"父亲倒下那天"：父亲脑梗那天赶赴医院的场景
+- 剧本26"可可出生"：2021年去医院看姐姐和新生可可的场景
+
+### 文件变更
+
+#### 新增文件
+- `src/types/task.ts` - 双轨任务类型定义
+- `src/stores/useTaskStore.ts` - 任务系统Store
+- `src/components/game/TaskPanel.tsx` - 双轨任务面板UI
+- `src/components/game/CauseModeScene.tsx` - 前因回忆模式场景
+
+#### 修改文件
+- `src/types/npc.ts` - NpcKey扩展、FamilyRole、NpcEventFrequency、organChange支持
+- `src/types/event.ts` - year/seasonInYear/source/taskType/transmissionChain字段
+- `src/types/time.ts` - currentYear字段、START_YEAR常量、getYear函数
+- `src/types/save.ts` - GamePhase增加prologue-cause阶段
+- `src/data/npcs/initialNpcs.ts` - 完全重写为4名家庭成员
+- `src/data/events/worldEvents.ts` - 14个宏观事件覆盖2025-2034年
+- `src/data/memories/memoryScripts.ts` - 新增3条家庭向记忆
+- `src/stores/useNpcStore.ts` - getFamilyMembers/getFamilyEventByFrequency/checkConnectionGatedEvents
+- `src/stores/useTimeStore.ts` - currentYear同步更新
+- `src/stores/useWorldEventStore.ts` - 年份条件检测、StateEffect实际应用
+- `src/stores/useGameStore.ts` - currentYear初始值
+- `src/systems/gameLoop.ts` - 任务系统集成、家庭事件频率检查、年份触发
+- `src/components/game/SceneController.tsx` - 前因模式流程
+- `src/components/game/CoreGameLoop.tsx` - TaskPanel集成
+- `src/App.tsx` - prologue-cause路由
+- `src/types/index.ts` - 新类型导出
+
+---
+
 ## [v4.3] - 2026-04-29
 
 ### 新增功能

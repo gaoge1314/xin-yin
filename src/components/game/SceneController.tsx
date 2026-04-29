@@ -6,9 +6,19 @@ import { useWillpowerStore } from '../../stores/useWillpowerStore';
 import { useCognitionStore } from '../../stores/useCognitionStore';
 import { useOrganStore } from '../../stores/useOrganStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
+import { useNpcStore } from '../../stores/useNpcStore';
+import { useWorldEventStore } from '../../stores/useWorldEventStore';
+import { useTaskStore } from '../../stores/useTaskStore';
+import { useHabitStore } from '../../stores/useHabitStore';
+import { useEnlightenmentStore } from '../../stores/useEnlightenmentStore';
+import { usePersonalityStore } from '../../stores/usePersonalityStore';
+import { useSocialRuleStore } from '../../stores/useSocialRuleStore';
+import { useAnchorStore } from '../../stores/useAnchorStore';
+import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
 import { RooftopScene } from './RooftopScene';
 import { FallingScene } from './FallingScene';
 import { UltimateChoice } from './UltimateChoice';
+import { CauseModeScene } from './CauseModeScene';
 import { GameOverScene } from './GameOverScene';
 import { AwakeningScene } from './AwakeningScene';
 import { EnlightenmentFalling } from './enlightenment/EnlightenmentFalling';
@@ -21,6 +31,15 @@ function resetAllStores() {
   useCognitionStore.getState().reset();
   useOrganStore.getState().reset();
   usePlayerStore.getState().reset();
+  useNpcStore.getState().reset();
+  useWorldEventStore.getState().reset();
+  useTaskStore.getState().reset();
+  useHabitStore.getState().reset();
+  useEnlightenmentStore.getState().reset();
+  usePersonalityStore.getState().reset();
+  useSocialRuleStore.getState().reset();
+  useAnchorStore.getState().reset();
+  useDayPhaseStore.getState().reset();
   useSceneStore.getState().clearNarrativeLog();
 }
 
@@ -39,11 +58,19 @@ export const SceneController: React.FC = () => {
   }, [setPhase]);
 
   const handleLetGo = useCallback(() => {
-    setPhase('prologue-gameover');
+    setPhase('prologue-cause');
   }, [setPhase]);
 
   const handleHoldOn = useCallback(() => {
     setPhase('prologue-awakening');
+  }, [setPhase]);
+
+  const handleCauseRetry = useCallback(() => {
+    setPhase('prologue-rooftop');
+  }, [setPhase]);
+
+  const handleCauseGiveUp = useCallback(() => {
+    setPhase('prologue-gameover');
   }, [setPhase]);
 
   const handleReturnToMenu = useCallback(() => {
@@ -72,6 +99,13 @@ export const SceneController: React.FC = () => {
           <UltimateChoice
             onLetGo={handleLetGo}
             onHoldOn={handleHoldOn}
+          />
+        );
+      case 'prologue-cause':
+        return (
+          <CauseModeScene
+            onRetry={handleCauseRetry}
+            onGiveUp={handleCauseGiveUp}
           />
         );
       case 'prologue-gameover':

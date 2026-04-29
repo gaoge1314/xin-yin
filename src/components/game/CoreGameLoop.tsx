@@ -12,6 +12,7 @@ import { EveningMonologue } from '../narrative/EveningMonologue';
 import { DreamFragment } from '../narrative/DreamFragment';
 import { NarrativeDisplay } from '../narrative/NarrativeDisplay';
 import { WorldEventModal } from './WorldEventModal';
+import { TaskPanel } from './TaskPanel';
 import { CollapsiblePanel } from '../ui/CollapsiblePanel';
 import { gameLoop } from '../../systems/gameLoop';
 import { useTimeStore } from '../../stores/useTimeStore';
@@ -142,6 +143,9 @@ export const CoreGameLoop: React.FC = () => {
 
         <CollapsiblePanel title="技能" side="right" defaultOpen={false}>
           <SkillButtons />
+          <div className="border-t border-white/5 pt-3 mt-3">
+            <TaskPanel />
+          </div>
         </CollapsiblePanel>
       </div>
 

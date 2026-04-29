@@ -15,6 +15,7 @@ function App() {
       case 'prologue-rooftop':
       case 'prologue-falling':
       case 'prologue-choice':
+      case 'prologue-cause':
       case 'prologue-gameover':
       case 'prologue-awakening':
         return <SceneController />;

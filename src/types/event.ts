@@ -7,7 +7,14 @@ export interface WorldEvent {
   effects: import('./action').StateEffect[];
   choices?: EventChoice[];
   isOneShot?: boolean;
+  source?: EventSource;
+  taskType?: EventTaskType;
+  transmissionChain?: string;
 }
+
+export type EventSource = 'school' | 'work' | 'family' | 'social' | 'society' | 'inner';
+
+export type EventTaskType = 'mandatory' | 'suggested' | 'spontaneous' | 'crisis';
 
 export interface EventCondition {
   minAge?: number;
@@ -15,6 +22,8 @@ export interface EventCondition {
   minDay?: number;
   maxDay?: number;
   season?: import('./time').Season[];
+  year?: number;
+  seasonInYear?: import('./time').Season;
   minWillpower?: number;
   maxWillpower?: number;
   minConnectionLevel?: number;

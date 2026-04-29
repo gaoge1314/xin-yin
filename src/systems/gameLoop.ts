@@ -12,6 +12,7 @@ import { useAnchorStore } from '../stores/useAnchorStore';
 import { useHabitStore } from '../stores/useHabitStore';
 import { useNpcStore } from '../stores/useNpcStore';
 import { useWorldEventStore } from '../stores/useWorldEventStore';
+import { useTaskStore } from '../stores/useTaskStore';
 import type { Action, Outcome, ActionRecord, PlayerInfluence } from '../types/action';
 import type { CognitionId } from '../types/cognition';
 import type { OrganHealth } from '../types/organs';
@@ -177,6 +178,15 @@ class GameLoopManager {
       }
     }
 
+    useTaskStore.getState().generatePersonalPlan();
+
+    const dailyFamilyEvents = useNpcStore.getState().getFamilyEventByFrequency('daily');
+    dailyFamilyEvents.forEach((event) => {
+      useNpcStore.getState().triggerEvent(event);
+    });
+
+    this.checkFamilyEvents();
+
     const enlightenmentState = useEnlightenmentStore.getState();
     if (
       !enlightenmentState.hasTriggeredEnlightenment &&
@@ -310,6 +320,11 @@ class GameLoopManager {
     useSceneStore.getState().addNarrativeLog(narrative);
 
     useHabitStore.getState().recordAction(selectedAction.id, selectedAction.category);
+
+    const conflicts = useTaskStore.getState().detectConflicts();
+    if (conflicts.length > 0) {
+      useSceneStore.getState().addNarrativeLog('世界任务与内心计划产生了冲突……');
+    }
 
     this.checkEmotionTriggers(selectedAction, outcome);
     this.checkAnchorTriggers(selectedAction, outcome);
@@ -736,11 +751,50 @@ class GameLoopManager {
     }
   }
 
+  private checkFamilyEvents() {
+    const totalDays = useTimeStore.getState().totalDays;
+    const frequencies: string[] = ['daily'];
+
+    if (totalDays % 7 === 0) {
+      frequencies.push('weekly');
+    }
+    if (totalDays % 14 === 0) {
+      frequencies.push('biweekly');
+    }
+    if (totalDays % 30 === 0) {
+      frequencies.push('monthly');
+    }
+
+    for (const freq of frequencies) {
+      const events = useNpcStore.getState().getFamilyEventByFrequency(freq as import('../types/npc').NpcEventFrequency);
+      events.forEach((event) => {
+        useNpcStore.getState().triggerEvent(event);
+      });
+    }
+
+    const connectionGatedEvents = useNpcStore.getState().checkConnectionGatedEvents();
+    connectionGatedEvents.forEach((event) => {
+      useNpcStore.getState().triggerEvent(event);
+    });
+  }
+
   private weeklyUpdate() {
     useWillpowerStore.getState().updateDepression();
     const organState = useOrganStore.getState();
     useWillpowerStore.getState().recover(3, organState as any);
     useHabitStore.getState().decayHabits();
+
+    useTaskStore.getState().generatePersonalPlan();
+
+    const weeklyFamilyEvents = useNpcStore.getState().getFamilyEventByFrequency('weekly');
+    weeklyFamilyEvents.forEach((event) => {
+      useNpcStore.getState().triggerEvent(event);
+    });
+
+    const biweeklyFamilyEvents = useNpcStore.getState().getFamilyEventByFrequency('biweekly');
+    biweeklyFamilyEvents.forEach((event) => {
+      useNpcStore.getState().triggerEvent(event);
+    });
   }
 
   private tickSkillCooldowns() {

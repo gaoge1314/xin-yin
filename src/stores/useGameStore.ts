@@ -16,7 +16,7 @@ import {
   BASE_RECOVERY_RATE,
 } from '../types/willpower';
 import { INITIAL_ORGAN_HEALTH } from '../types/organs';
-import { START_AGE } from '../types/time';
+import { START_AGE, START_YEAR } from '../types/time';
 import { SAVE_VERSION, SAVE_KEY } from '../types/save';
 
 interface GameActions {
@@ -55,6 +55,7 @@ const initialGameState: FullGameState = {
     speed: 1,
     isPaused: false,
     isInputFocused: false,
+    currentYear: START_YEAR,
   },
   willpower: {
     current: INITIAL_WILLPOWER_CURRENT,

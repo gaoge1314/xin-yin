@@ -5,7 +5,9 @@ import {
   DAYS_PER_SEASON,
   HOURS_PER_DAY,
   START_AGE,
+  START_YEAR,
   getTimeOfDay,
+  getYear,
 } from '../types/time';
 
 interface TimeActions {
@@ -15,6 +17,7 @@ interface TimeActions {
   setSpeed: (speed: 1 | 2 | 4) => void;
   togglePause: () => void;
   getTimeOfDay: () => TimeOfDay;
+  getCurrentYear: () => number;
   reset: () => void;
 }
 
@@ -27,6 +30,7 @@ const initialState: TimeState = {
   speed: 1,
   isPaused: false,
   isInputFocused: false,
+  currentYear: START_YEAR,
 };
 
 export const useTimeStore = create<TimeState & TimeActions>((set, get) => ({
@@ -60,10 +64,10 @@ export const useTimeStore = create<TimeState & TimeActions>((set, get) => ({
     if (currentIndex === 3) {
       const newAge = state.age + 1;
       if (newAge > 35) {
-        set({ age: 35, season: 'winter', day: DAYS_PER_SEASON - 1 });
+        set({ age: 35, season: 'winter', day: DAYS_PER_SEASON - 1, currentYear: getYear(35) });
         return;
       }
-      set({ age: newAge, season: 'spring' });
+      set({ age: newAge, season: 'spring', currentYear: getYear(newAge) });
     } else {
       set({ season: SEASON_ORDER[currentIndex + 1] as Season });
     }
@@ -87,6 +91,10 @@ export const useTimeStore = create<TimeState & TimeActions>((set, get) => ({
 
   getTimeOfDay: () => {
     return getTimeOfDay(get().hour);
+  },
+
+  getCurrentYear: () => {
+    return get().currentYear;
   },
 
   reset: () => {

@@ -42,6 +42,7 @@ export type GamePhase =
   | 'prologue-rooftop'
   | 'prologue-falling'
   | 'prologue-choice'
+  | 'prologue-cause'
   | 'prologue-gameover'
   | 'prologue-awakening'
   | 'core-loop'

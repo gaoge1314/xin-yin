@@ -1,5 +1,5 @@
 export type { Season, TimeState, TimeOfDay } from './time';
-export { SEASON_ORDER, SEASON_LABELS, DAYS_PER_SEASON, HOURS_PER_DAY, START_AGE, END_AGE, getTimeOfDay, TIME_OF_DAY_LABELS } from './time';
+export { SEASON_ORDER, SEASON_LABELS, DAYS_PER_SEASON, HOURS_PER_DAY, START_AGE, END_AGE, START_YEAR, getTimeOfDay, TIME_OF_DAY_LABELS, getYear } from './time';
 
 export type { Cognition, CognitionState, CognitionId, DustType } from './cognition';
 
@@ -11,7 +11,7 @@ export { ORGAN_NAMES, ORGAN_EMOTIONS, INITIAL_ORGAN_HEALTH, ORGAN_CRITICAL_THRES
 
 export type { Action, ActionRequirement, Outcome, StateEffect, PlayerInfluence, ActionRecord } from './action';
 
-export type { WorldEvent, EventCondition, EventChoice, ChoiceRequirement, EventOutcome, EventRecord } from './event';
+export type { WorldEvent, EventCondition, EventChoice, ChoiceRequirement, EventOutcome, EventRecord, EventSource, EventTaskType } from './event';
 
 export type { RecallSkill, DreamSkill, DreamVision, Memory } from './skill';
 export { RECALL_COOLDOWN, DREAM_COOLDOWN, MUTEX_PERIOD } from './skill';
@@ -31,3 +31,7 @@ export { INITIAL_SOCIAL_RULE_INTENSITY } from './socialRule';
 export type { XinYinAnchor, AnchorState, AnchorTriggerType } from './anchor';
 
 export type { EmotionTrigger, EmotionType, TriggeredEmotion } from './emotionTrigger';
+
+export type { NpcRole, FamilyRole, NpcKey, NpcEventFrequency, NpcEvent, Npc } from './npc';
+
+export type { TaskTrack, TaskSource, TaskUrgency, PersonalPlanTerm, GameTask, PersonalPlan, TaskConflict } from './task';

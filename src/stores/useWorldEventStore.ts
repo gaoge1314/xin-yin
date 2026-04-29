@@ -4,7 +4,12 @@ import { WORLD_EVENTS } from '../data/events/worldEvents';
 import { useTimeStore } from './useTimeStore';
 import { usePlayerStore } from './usePlayerStore';
 import { useSceneStore } from './useSceneStore';
+import { useWillpowerStore } from './useWillpowerStore';
+import { useCognitionStore } from './useCognitionStore';
+import { useOrganStore } from './useOrganStore';
 import type { Season } from '../types/time';
+import type { CognitionId } from '../types/cognition';
+import type { OrganHealth } from '../types/organs';
 
 interface WorldEventActions {
   checkEvents: () => WorldEvent[];
@@ -49,6 +54,8 @@ export const useWorldEventStore = create<{
     if (cond.minAge !== undefined && timeState.age < cond.minAge) return false;
     if (cond.maxAge !== undefined && timeState.age > cond.maxAge) return false;
     if (cond.season && !cond.season.includes(timeState.season as Season)) return false;
+    if (cond.year !== undefined && timeState.currentYear !== cond.year) return false;
+    if (cond.seasonInYear !== undefined && timeState.season !== cond.seasonInYear) return false;
     if (cond.minConnectionLevel !== undefined && playerState.getConnectionLevel() < cond.minConnectionLevel) return false;
     if (cond.maxConnectionLevel !== undefined && playerState.getConnectionLevel() > cond.maxConnectionLevel) return false;
     if (cond.chance !== undefined && Math.random() >= cond.chance) return false;
@@ -65,6 +72,40 @@ export const useWorldEventStore = create<{
 
     const outcome = resolveOutcome(choice.outcomes);
     useSceneStore.getState().addNarrativeLog(outcome.narrative);
+
+    for (const effect of outcome.effects) {
+      switch (effect.target) {
+        case 'willpower': {
+          if (effect.value < 0) {
+            useWillpowerStore.getState().consume(Math.abs(effect.value));
+          } else {
+            useWillpowerStore.getState().recover(effect.value);
+          }
+          break;
+        }
+        case 'organ': {
+          if (effect.key) {
+            useOrganStore.getState().updateOrgan({
+              organ: effect.key as keyof OrganHealth,
+              change: effect.value,
+              reason: eventId,
+            });
+          }
+          break;
+        }
+        case 'cognition': {
+          if (effect.key) {
+            const cogId = effect.key as CognitionId;
+            if (effect.value > 0) {
+              useCognitionStore.getState().recordPositiveFeedback(cogId, eventId);
+            } else {
+              useCognitionStore.getState().recordNegativeFeedback(cogId);
+            }
+          }
+          break;
+        }
+      }
+    }
 
     const record: EventRecord = {
       eventId,

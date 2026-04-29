@@ -25,6 +25,7 @@ export interface TimeState {
   speed: 1 | 2 | 4;
   isPaused: boolean;
   isInputFocused: boolean;
+  currentYear: number;
 }
 
 export const SEASON_ORDER: Season[] = ['spring', 'summer', 'autumn', 'winter'];
@@ -40,3 +41,8 @@ export const DAYS_PER_SEASON = 90;
 export const HOURS_PER_DAY = 24;
 export const START_AGE = 27;
 export const END_AGE = 35;
+export const START_YEAR = 2025;
+
+export function getYear(age: number): number {
+  return START_YEAR + (age - START_AGE);
+}
