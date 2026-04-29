@@ -1,10 +1,25 @@
 import { useSceneStore } from '../../stores/useSceneStore';
 import { useGameStore } from '../../stores/useGameStore';
+import { useTimeStore } from '../../stores/useTimeStore';
+import { useWillpowerStore } from '../../stores/useWillpowerStore';
+import { useCognitionStore } from '../../stores/useCognitionStore';
+import { useOrganStore } from '../../stores/useOrganStore';
+import { usePlayerStore } from '../../stores/usePlayerStore';
+
+function resetAllStores() {
+  useTimeStore.getState().reset();
+  useWillpowerStore.getState().reset();
+  useCognitionStore.getState().reset();
+  useOrganStore.getState().reset();
+  usePlayerStore.getState().reset();
+  useSceneStore.getState().clearNarrativeLog();
+}
 
 export const MainMenu: React.FC = () => {
   const setPhase = useSceneStore((s) => s.setPhase);
   const hasSave = useGameStore((s) => s.hasSave);
   const loadGame = useGameStore((s) => s.loadGame);
+  const newGame = useGameStore((s) => s.newGame);
 
   const handleNewGame = () => {
     setPhase('prologue-rooftop');
@@ -14,6 +29,12 @@ export const MainMenu: React.FC = () => {
     if (loadGame()) {
       setPhase('core-loop');
     }
+  };
+
+  const handleSkipPrologue = () => {
+    newGame();
+    resetAllStores();
+    setPhase('core-loop');
   };
 
   return (
@@ -41,6 +62,18 @@ export const MainMenu: React.FC = () => {
           onClick={handleNewGame}
         >
           新的开始
+        </button>
+
+        <button
+          className="
+            px-8 py-3 border border-white/10 text-white/30 text-sm tracking-widest
+            hover:border-white/30 hover:text-white/50
+            transition-all duration-500 rounded-sm
+            bg-transparent
+          "
+          onClick={handleSkipPrologue}
+        >
+          再试一次
         </button>
 
         {hasSave() && (
