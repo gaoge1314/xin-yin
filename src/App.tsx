@@ -2,6 +2,7 @@ import { useSceneStore } from './stores/useSceneStore';
 import { MainMenu } from './components/game/MainMenu';
 import { SceneController } from './components/game/SceneController';
 import { CoreGameLoop } from './components/game/CoreGameLoop';
+import { EndingScene } from './components/game/EndingScene';
 import { DebugPanel } from './components/debug/DebugPanel';
 
 function App() {
@@ -20,7 +21,7 @@ function App() {
       case 'core-loop':
         return <CoreGameLoop />;
       case 'ending':
-        return <div className="w-full h-full flex items-center justify-center text-white/30">结局画面</div>;
+        return <EndingScene />;
       default:
         return <MainMenu />;
     }

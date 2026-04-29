@@ -6,16 +6,22 @@ export interface WorldEvent {
   content: string;
   effects: import('./action').StateEffect[];
   choices?: EventChoice[];
+  isOneShot?: boolean;
 }
 
 export interface EventCondition {
   minAge?: number;
   maxAge?: number;
+  minDay?: number;
+  maxDay?: number;
   season?: import('./time').Season[];
   minWillpower?: number;
   maxWillpower?: number;
+  minConnectionLevel?: number;
+  maxConnectionLevel?: number;
   requiredCognition?: string[];
   organThreshold?: Partial<import('./organs').OrganHealth>;
+  chance?: number;
 }
 
 export interface EventChoice {
@@ -26,7 +32,7 @@ export interface EventChoice {
 }
 
 export interface ChoiceRequirement {
-  type: 'willpower' | 'cognition' | 'organ';
+  type: 'willpower' | 'cognition' | 'organ' | 'connection';
   targetId?: string;
   minValue?: number;
 }

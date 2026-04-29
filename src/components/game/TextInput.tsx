@@ -4,7 +4,7 @@ import { useWillpowerStore } from '../../stores/useWillpowerStore';
 import { useTimeStore } from '../../stores/useTimeStore';
 import { useSceneStore } from '../../stores/useSceneStore';
 import { useEnlightenmentStore } from '../../stores/useEnlightenmentStore';
-import { TRUST_LOW_THRESHOLD } from '../../types/trust';
+import { CONNECTION_COLD_THRESHOLD, TRUST_LOW_THRESHOLD } from '../../types/trust';
 
 type Intensity = 'whisper' | 'normal' | 'earnest' | 'resonance';
 
@@ -36,6 +36,19 @@ const INTENSITY_NARRATIVE: Record<Intensity, string> = {
   resonance: '你的话与他心底的声音合而为一...',
 };
 
+const COLD_RESPONSES = [
+  '嗯。',
+  '知道了。',
+  '随便。',
+  '...哦。',
+  '再说吧。',
+  '无所谓。',
+  '就这样。',
+  '......',
+  '行吧。',
+  '我听到了。',
+];
+
 const INTENSITY_STYLES: Record<Intensity, string> = {
   whisper: 'border-white/20 text-white/40 hover:border-white/30 hover:text-white/50',
   normal: 'border-white/30 text-white/60 hover:border-calm/30 hover:text-calm/60',
@@ -59,10 +72,10 @@ export const TextInput: React.FC = () => {
   const addNarrativeLog = useSceneStore((s) => s.addNarrativeLog);
   const setPhase = useSceneStore((s) => s.setPhase);
 
-  const isClosed = usePlayerStore((s) => s.isClosed);
   const trustLevel = usePlayerStore((s) => s.trustLevel);
   const hasEnlightenment = usePlayerStore((s) => s.hasEnlightenment);
-  const isLowTrust = trustLevel < TRUST_LOW_THRESHOLD && !isClosed;
+  const isColdResponse = trustLevel < CONNECTION_COLD_THRESHOLD;
+  const isLowTrust = trustLevel < TRUST_LOW_THRESHOLD && !isColdResponse;
 
   const getWillpowerPercent = useCallback((intensity: Intensity) => {
     return hasEnlightenment
@@ -72,7 +85,6 @@ export const TextInput: React.FC = () => {
 
   const handlePrepareSend = useCallback(() => {
     if (!text.trim()) return;
-    if (isClosed) return;
 
     if (text.trim() === '测试：龙场悟道') {
       useEnlightenmentStore.getState().startEnlightenment();
@@ -84,7 +96,7 @@ export const TextInput: React.FC = () => {
     const resonates = checkResonance(text.trim());
     setCanResonate(resonates);
     setShowIntensity(true);
-  }, [text, checkResonance, setPhase, isClosed]);
+  }, [text, checkResonance, setPhase]);
 
   const handleSelectIntensity = useCallback((intensity: Intensity) => {
     const trimmed = text.trim();
@@ -103,6 +115,11 @@ export const TextInput: React.FC = () => {
 
     addInfluence(trimmed, intensity);
     addNarrativeLog(INTENSITY_NARRATIVE[intensity]);
+
+    if (usePlayerStore.getState().trustLevel < CONNECTION_COLD_THRESHOLD) {
+      const coldReply = COLD_RESPONSES[Math.floor(Math.random() * COLD_RESPONSES.length)];
+      addNarrativeLog(`他：${coldReply}`);
+    }
 
     setText('');
     setShowIntensity(false);
@@ -143,17 +160,9 @@ export const TextInput: React.FC = () => {
     ? ['whisper', 'normal', 'earnest', 'resonance']
     : ['whisper', 'normal', 'earnest'];
 
-  const textareaBorder = isClosed
-    ? 'border-red-900/40'
-    : 'border-white/10';
-  const textareaFocusBorder = isClosed
-    ? 'focus:border-red-800/50'
-    : 'focus:border-calm/30';
-  const textareaOpacity = isClosed ? 'opacity-40' : '';
-
   return (
     <div className="relative">
-      {isFocused && !isClosed && (
+      {isFocused && (
         <div className="absolute -top-6 left-0 text-calm/40 text-xs tracking-widest animate-pulse">
           心印之声
         </div>
@@ -174,29 +183,20 @@ export const TextInput: React.FC = () => {
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            placeholder={isClosed ? '' : '说些什么，成为他心中的声音...'}
+            placeholder={isColdResponse ? '说些什么...但他可能不会在意。' : '说些什么，成为他心中的声音...'}
             className={`
-              w-full bg-white/[0.03] border ${textareaBorder} rounded px-3 py-2
+              w-full bg-white/[0.03] border border-white/10 rounded px-3 py-2
               text-white/70 text-sm placeholder:text-white/20
-              focus:outline-none ${textareaFocusBorder}
+              focus:outline-none focus:border-calm/30
               resize-none
               transition-all duration-300
-              ${textareaOpacity}
             `}
             rows={1}
-            disabled={isClosed}
           />
-          {isClosed && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-red-400/60 text-sm tracking-wider">
-                他封闭了自己，你的声音无法传达
-              </span>
-            </div>
-          )}
         </div>
         <button
           onClick={handlePrepareSend}
-          disabled={!text.trim() || showIntensity || isClosed}
+          disabled={!text.trim() || showIntensity}
           className="
             px-4 py-2 border border-white/10 rounded text-white/30 text-sm
             hover:border-calm/30 hover:text-calm/60
@@ -208,13 +208,19 @@ export const TextInput: React.FC = () => {
         </button>
       </div>
 
+      {isColdResponse && (
+        <div className="mt-1 text-amber-600/60 text-xs tracking-wide">
+          他对你的声音很冷淡...
+        </div>
+      )}
+
       {isLowTrust && (
         <div className="mt-1 text-amber-500/50 text-xs tracking-wide">
           他似乎不太愿意听你说话...
         </div>
       )}
 
-      {showIntensity && !isClosed && (
+      {showIntensity && (
         <div className="mt-2 flex flex-wrap gap-2 items-center animate-[fadeIn_0.3s_ease-out]">
           {intensityOptions.map((intensity) => {
             const cost = Math.ceil(willpowerCurrent * getWillpowerPercent(intensity));

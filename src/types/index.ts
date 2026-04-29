@@ -1,5 +1,5 @@
-export type { Season, TimeState } from './time';
-export { SEASON_ORDER, SEASON_LABELS, DAYS_PER_SEASON, HOURS_PER_DAY, START_AGE, END_AGE } from './time';
+export type { Season, TimeState, TimeOfDay } from './time';
+export { SEASON_ORDER, SEASON_LABELS, DAYS_PER_SEASON, HOURS_PER_DAY, START_AGE, END_AGE, getTimeOfDay, TIME_OF_DAY_LABELS } from './time';
 
 export type { Cognition, CognitionState, CognitionId, DustType } from './cognition';
 
@@ -20,7 +20,7 @@ export type { SaveData, TransformationRecord, GamePhase } from './save';
 export { SAVE_VERSION, SAVE_KEY } from './save';
 
 export type { TrustState } from './trust';
-export { INITIAL_TRUST_LEVEL, TRUST_CLOSED_THRESHOLD, TRUST_LOW_THRESHOLD, TRUST_UTILITARIAN_PENALTY, TRUST_EMPATHY_BONUS, TRUST_RECOVERY_RATE } from './trust';
+export { INITIAL_TRUST_LEVEL, CONNECTION_COLD_THRESHOLD, CONNECTION_HIGH_THRESHOLD, TRUST_LOW_THRESHOLD, TRUST_UTILITARIAN_PENALTY, TRUST_EMPATHY_BONUS, TRUST_RECOVERY_RATE } from './trust';
 
 export type { Personality } from './personality';
 export { INITIAL_PERSONALITY, PERSONALITY_LABELS, PERSONALITY_DESCRIPTIONS } from './personality';

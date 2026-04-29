@@ -9,6 +9,9 @@ import { useEnlightenmentStore } from '../stores/useEnlightenmentStore';
 import { usePersonalityStore } from '../stores/usePersonalityStore';
 import { useSocialRuleStore } from '../stores/useSocialRuleStore';
 import { useAnchorStore } from '../stores/useAnchorStore';
+import { useHabitStore } from '../stores/useHabitStore';
+import { useNpcStore } from '../stores/useNpcStore';
+import { useWorldEventStore } from '../stores/useWorldEventStore';
 import type { Action, Outcome, ActionRecord, PlayerInfluence } from '../types/action';
 import type { CognitionId } from '../types/cognition';
 import type { OrganHealth } from '../types/organs';
@@ -17,6 +20,7 @@ import { INITIAL_ACTIONS } from '../data/actions/initialActions';
 import { ORGAN_CRITICAL_THRESHOLD } from '../types/organs';
 import type { Season } from '../types/time';
 import { INITIAL_EMOTION_TRIGGERS } from '../data/triggers/initialTriggers';
+import { checkPrematureDeath } from './ending/endingJudge';
 
 interface ActionHistoryEntry {
   actionId: string;
@@ -150,6 +154,29 @@ class GameLoopManager {
   }
 
   private dailyEvent() {
+    if (checkPrematureDeath()) {
+      useSceneStore.getState().setPhase('ending');
+      this.stop();
+      return;
+    }
+
+    useNpcStore.getState().checkIntroductions();
+    const npcEvents = useNpcStore.getState().checkEvents();
+    npcEvents.forEach((event) => {
+      useNpcStore.getState().triggerEvent(event);
+    });
+
+    const worldEvents = useWorldEventStore.getState().checkEvents();
+    if (worldEvents.length > 0) {
+      const event = worldEvents[0];
+      useSceneStore.getState().addNarrativeLog(event.content);
+      if (event.choices && event.choices.length > 0) {
+        useWorldEventStore.setState({ activeEventId: event.id });
+      } else {
+        useWorldEventStore.getState().observeEvent(event.id);
+      }
+    }
+
     const enlightenmentState = useEnlightenmentStore.getState();
     if (
       !enlightenmentState.hasTriggeredEnlightenment &&
@@ -282,8 +309,31 @@ class GameLoopManager {
     const narrative = this.generateNarrative(selectedAction, outcome);
     useSceneStore.getState().addNarrativeLog(narrative);
 
+    useHabitStore.getState().recordAction(selectedAction.id, selectedAction.category);
+
     this.checkEmotionTriggers(selectedAction, outcome);
     this.checkAnchorTriggers(selectedAction, outcome);
+    this.checkHighConnectionSeekHelp();
+  }
+
+  private checkHighConnectionSeekHelp() {
+    const playerState = usePlayerStore.getState();
+    if (!playerState.isHighConnection()) return;
+    if (Math.random() >= 0.15) return;
+
+    const SEEK_HELP_PHRASES = [
+      '你觉得呢？',
+      '你怎么看？',
+      '我心里有些乱...你能帮我理清吗？',
+      '如果是你，你会怎么做？',
+      '我好像需要一个方向...',
+      '我好像听到你在说什么...也许你是对的。',
+    ];
+    const phrase = SEEK_HELP_PHRASES[Math.floor(Math.random() * SEEK_HELP_PHRASES.length)];
+    useSceneStore.getState().addNarrativeLog(
+      `「他主动向你求助」——${phrase}`
+    );
+    playerState.adjustTrust(3, 'seek_help');
   }
 
   private filterAvailableActions(
@@ -690,6 +740,7 @@ class GameLoopManager {
     useWillpowerStore.getState().updateDepression();
     const organState = useOrganStore.getState();
     useWillpowerStore.getState().recover(3, organState as any);
+    useHabitStore.getState().decayHabits();
   }
 
   private tickSkillCooldowns() {

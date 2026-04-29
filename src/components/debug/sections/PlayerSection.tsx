@@ -24,9 +24,9 @@ export const PlayerSection: React.FC = () => {
         onChange={(value) => usePlayerStore.setState({ trustLevel: value })}
       />
       <ToggleControl
-        label="是否封闭"
-        checked={store.isClosed}
-        onChange={(value) => usePlayerStore.setState({ isClosed: value })}
+        label="冷淡回应"
+        checked={store.isColdResponse()}
+        onChange={() => {}}
       />
       <SliderControl
         label="连续功利次数"

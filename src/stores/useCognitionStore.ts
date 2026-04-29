@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import type { Cognition, CognitionId } from '../types/cognition';
 import { INITIAL_COGNITIONS } from '../data/cognitions/initialCognitions';
+import { usePlayerStore } from './usePlayerStore';
+import { useSceneStore } from './useSceneStore';
+
+const COGNITION_TRANSFORM_BASE_RATE = 0.5;
 
 interface CognitionActions {
   recordPositiveFeedback: (cognitionId: CognitionId, actionId: string) => void;
@@ -21,26 +25,33 @@ export const useCognitionStore = create<{
   unlockedCount: INITIAL_COGNITIONS.filter((c) => c.isUnlocked).length,
 
   recordPositiveFeedback: (cognitionId: CognitionId, actionId: string) => {
+    const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+    const connectionBonus = (connectionLevel / 100) * 0.5;
+    const transformChance = Math.min(COGNITION_TRANSFORM_BASE_RATE + connectionBonus, 1);
+
     set((state) => ({
       cognitions: state.cognitions.map((c) => {
         if (c.id !== cognitionId || c.isTransformed) return c;
         const newCount = c.progressCount + 1;
         if (newCount >= 3) {
-          if (c.depth === 'shallow') {
-            return {
-              ...c,
-              progressCount: 0,
-              isTransformed: true,
-              currentContent: c.targetContent,
-            };
-          }
-          if (c.depth === 'deep' && c.hasEnlightenment) {
-            return {
-              ...c,
-              progressCount: 0,
-              isTransformed: true,
-              currentContent: c.targetContent,
-            };
+          const roll = Math.random();
+          if (roll < transformChance) {
+            if (c.depth === 'shallow') {
+              return {
+                ...c,
+                progressCount: 0,
+                isTransformed: true,
+                currentContent: c.targetContent,
+              };
+            }
+            if (c.depth === 'deep' && c.hasEnlightenment) {
+              return {
+                ...c,
+                progressCount: 0,
+                isTransformed: true,
+                currentContent: c.targetContent,
+              };
+            }
           }
           return { ...c, progressCount: 3, lastActionId: actionId };
         }
@@ -50,7 +61,18 @@ export const useCognitionStore = create<{
 
     const cognition = get().cognitions.find((c) => c.id === cognitionId);
     if (cognition?.isTransformed) {
+      if (connectionLevel >= 60) {
+        useSceneStore.getState().addNarrativeLog(
+          '你的声音被他听见了——他愿意相信你说的。'
+        );
+      }
       get().transformCognition(cognitionId);
+    } else if (cognition && cognition.progressCount >= 3 && !cognition.isTransformed) {
+      if (connectionLevel < 30) {
+        useSceneStore.getState().addNarrativeLog(
+          '他似乎有所触动，但还不够信任你，无法接受这种改变。'
+        );
+      }
     }
   },
 

@@ -100,14 +100,14 @@ export function useRecallSkill() {
 
 export function useDreamSkill() {
   const dreamCooldown = useGameStore((s) => s.dreamCooldown);
-  const xinYinLevel = usePlayerStore((s) => s.xinYinLevel);
 
   const canUse = dreamCooldown === 0;
 
   const useDream = (): DreamVision | null => {
     if (!canUse) return null;
 
-    const beliefRate = calculateBeliefRate(xinYinLevel);
+    const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+    const beliefRate = calculateBeliefRate(connectionLevel);
 
     const selectedSymbol = DREAM_SYMBOLS[Math.floor(Math.random() * DREAM_SYMBOLS.length)];
 
@@ -117,7 +117,7 @@ export function useDreamSkill() {
       relatedEventId: undefined,
       beliefRate,
       timestamp: Date.now(),
-      ...(xinYinLevel > 50 ? { interpretationHint: selectedSymbol.interpretation } : {}),
+      ...(usePlayerStore.getState().xinYinLevel > 50 ? { interpretationHint: selectedSymbol.interpretation } : {}),
     };
 
     const isBelieved = Math.random() < beliefRate;
@@ -127,16 +127,18 @@ export function useDreamSkill() {
         believedVisions: [...state.believedVisions, vision],
       }));
       const hint = vision.interpretationHint ? `\n你隐约感到——${vision.interpretationHint}` : '';
+      const connectionDesc = connectionLevel >= 60 ? '他认真地思索了这个梦。' : '他似乎相信了这个梦。';
       useSceneStore.getState().addNarrativeLog(
-        `入梦：${vision.content}（他似乎相信了这个梦）${hint}`
+        `入梦：${vision.content}（${connectionDesc}）${hint}`
       );
     } else {
       useGameStore.setState((state) => ({
         rejectedVisions: [...state.rejectedVisions, vision],
       }));
       const hint = vision.interpretationHint ? `\n你隐约感到——${vision.interpretationHint}` : '';
+      const rejectDesc = connectionLevel < 20 ? '他根本没把这个梦当回事。' : '他摇了摇头，不信这个。';
       useSceneStore.getState().addNarrativeLog(
-        `入梦：${vision.content}（他摇了摇头，不信这个）${hint}`
+        `入梦：${vision.content}（${rejectDesc}）${hint}`
       );
     }
 
@@ -154,8 +156,8 @@ export function useDreamSkill() {
   return { canUse, dreamCooldown, useDream, tickCooldown };
 }
 
-function calculateBeliefRate(xinYinLevel: number): number {
-  let rate = 0.15 + Math.random() * 0.15;
-  rate += (xinYinLevel / 100) * 0.3;
-  return Math.min(rate, 0.8);
+function calculateBeliefRate(connectionLevel: number): number {
+  const baseRate = 0.15;
+  const connectionBonus = (connectionLevel / 100) * 0.55;
+  return Math.min(baseRate + connectionBonus, 0.70);
 }

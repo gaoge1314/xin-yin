@@ -3,8 +3,10 @@ import { useSceneStore } from '../../stores/useSceneStore';
 
 const MAX_DISPLAY_ENTRIES = 50;
 
-const MEMORY_TITLE_RE = /^【(名|情|怨|惧|我执|光|悟)】(.+)$/;
+const MEMORY_TITLE_RE = /^【(名|情|怨|惧|我执|光|悟|新人物)】(.+)$/;
 const INNER_VOICE_RE = /^——"(.+)"$/;
+const SEEK_HELP_RE = /^「他主动向你求助」——(.+)$/;
+const NPC_EVENT_RE = /^(母亲|老刘|小陈|阿明)[：:](.+)$/;
 
 export const NarrativeDisplay: React.FC = () => {
   const narrativeLog = useSceneStore((s) => s.narrativeLog);
@@ -49,6 +51,24 @@ export const NarrativeDisplay: React.FC = () => {
     if (voiceMatch) {
       return (
         <p key={index} className="text-white/40 text-sm italic pl-2 border-l border-white/10">
+          {text}
+        </p>
+      );
+    }
+
+    const seekHelpMatch = text.match(SEEK_HELP_RE);
+    if (seekHelpMatch) {
+      return (
+        <p key={index} className="text-calm/80 text-sm italic pl-3 border-l-2 border-calm/40 bg-calm/5 py-1 rounded-r animate-[fadeIn_0.5s_ease-out]">
+          {text}
+        </p>
+      );
+    }
+
+    const npcEventMatch = text.match(NPC_EVENT_RE);
+    if (npcEventMatch) {
+      return (
+        <p key={index} className="text-amber-200/60 text-sm pl-3 border-l-2 border-amber-500/30 bg-amber-500/5 py-1 rounded-r animate-[fadeIn_0.5s_ease-out]">
           {text}
         </p>
       );

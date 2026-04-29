@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import type { PlayerInfluence } from '../types/action';
 import {
   INITIAL_TRUST_LEVEL,
-  TRUST_CLOSED_THRESHOLD,
+  CONNECTION_COLD_THRESHOLD,
+  CONNECTION_HIGH_THRESHOLD,
   TRUST_LOW_THRESHOLD,
   TRUST_UTILITARIAN_PENALTY,
   TRUST_EMPATHY_BONUS,
@@ -29,11 +30,14 @@ interface PlayerActions {
   checkResonance: (text: string) => boolean;
   getRecentInfluences: (withinMs?: number) => PlayerInfluence[];
   clearOldInfluences: (maxAge?: number) => void;
-  adjustTrust: (delta: number) => void;
+  adjustTrust: (delta: number, reason?: string) => void;
   markUtilitarian: () => void;
   markEmpathetic: () => void;
   naturalTrustRecovery: () => void;
   isInfluenceReduced: () => boolean;
+  getConnectionLevel: () => number;
+  isColdResponse: () => boolean;
+  isHighConnection: () => boolean;
   triggerEnlightenment: () => void;
   reset: () => void;
 }
@@ -42,16 +46,14 @@ export const usePlayerStore = create<{
   influences: PlayerInfluence[];
   xinYinLevel: number;
   trustLevel: number;
-  isClosed: boolean;
-  closedReason?: string;
+  trustChangeReason?: string;
   consecutiveUtilitarian: number;
   hasEnlightenment: boolean;
 } & PlayerActions>((set, get) => ({
   influences: [],
   xinYinLevel: 0,
   trustLevel: INITIAL_TRUST_LEVEL,
-  isClosed: false,
-  closedReason: undefined,
+  trustChangeReason: undefined,
   consecutiveUtilitarian: 0,
   hasEnlightenment: false,
 
@@ -95,52 +97,44 @@ export const usePlayerStore = create<{
     }));
   },
 
-  adjustTrust: (delta: number) => {
+  adjustTrust: (delta: number, reason?: string) => {
     set((state) => {
       const newLevel = Math.max(0, Math.min(100, state.trustLevel + delta));
-      let isClosed = state.isClosed;
-      let closedReason = state.closedReason;
-
-      if (newLevel < TRUST_CLOSED_THRESHOLD) {
-        isClosed = true;
-        if (!closedReason) {
-          closedReason = '他的心关上了，你的声音再也传不进去。';
-        }
-      } else if (newLevel > TRUST_CLOSED_THRESHOLD + 10) {
-        isClosed = false;
-        closedReason = undefined;
-      }
-
-      return { trustLevel: newLevel, isClosed, closedReason };
+      return { trustLevel: newLevel, trustChangeReason: reason };
     });
   },
 
   markUtilitarian: () => {
     const state = get();
     const newConsecutive = state.consecutiveUtilitarian + 1;
-    let isClosed = state.isClosed;
-    let closedReason = state.closedReason;
 
-    if (newConsecutive >= 3) {
-      isClosed = true;
-      closedReason = '你太急切了，他需要的是理解，不是指令。';
-    }
-
-    set({ consecutiveUtilitarian: newConsecutive, isClosed, closedReason });
-    get().adjustTrust(-TRUST_UTILITARIAN_PENALTY);
+    set({ consecutiveUtilitarian: newConsecutive });
+    get().adjustTrust(-TRUST_UTILITARIAN_PENALTY, 'utilitarian');
   },
 
   markEmpathetic: () => {
     set({ consecutiveUtilitarian: 0 });
-    get().adjustTrust(TRUST_EMPATHY_BONUS);
+    get().adjustTrust(TRUST_EMPATHY_BONUS, 'empathetic');
   },
 
   naturalTrustRecovery: () => {
-    get().adjustTrust(TRUST_RECOVERY_RATE);
+    get().adjustTrust(TRUST_RECOVERY_RATE, 'natural_recovery');
   },
 
   isInfluenceReduced: () => {
     return get().trustLevel < TRUST_LOW_THRESHOLD;
+  },
+
+  getConnectionLevel: () => {
+    return get().trustLevel;
+  },
+
+  isColdResponse: () => {
+    return get().trustLevel < CONNECTION_COLD_THRESHOLD;
+  },
+
+  isHighConnection: () => {
+    return get().trustLevel >= CONNECTION_HIGH_THRESHOLD;
   },
 
   triggerEnlightenment: () => {
@@ -155,8 +149,7 @@ export const usePlayerStore = create<{
       influences: [],
       xinYinLevel: 0,
       trustLevel: INITIAL_TRUST_LEVEL,
-      isClosed: false,
-      closedReason: undefined,
+      trustChangeReason: undefined,
       consecutiveUtilitarian: 0,
       hasEnlightenment: false,
     });

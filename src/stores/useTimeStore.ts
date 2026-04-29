@@ -1,10 +1,11 @@
 import { create } from 'zustand';
-import type { TimeState, Season } from '../types/time';
+import type { TimeState, Season, TimeOfDay } from '../types/time';
 import {
   SEASON_ORDER,
   DAYS_PER_SEASON,
   HOURS_PER_DAY,
   START_AGE,
+  getTimeOfDay,
 } from '../types/time';
 
 interface TimeActions {
@@ -12,6 +13,8 @@ interface TimeActions {
   advanceSeason: () => void;
   setInputFocused: (focused: boolean) => void;
   setSpeed: (speed: 1 | 2 | 4) => void;
+  togglePause: () => void;
+  getTimeOfDay: () => TimeOfDay;
   reset: () => void;
 }
 
@@ -76,6 +79,14 @@ export const useTimeStore = create<TimeState & TimeActions>((set, get) => ({
 
   setSpeed: (speed: 1 | 2 | 4) => {
     set({ speed });
+  },
+
+  togglePause: () => {
+    set((state) => ({ isPaused: !state.isPaused }));
+  },
+
+  getTimeOfDay: () => {
+    return getTimeOfDay(get().hour);
   },
 
   reset: () => {

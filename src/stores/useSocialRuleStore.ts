@@ -9,6 +9,7 @@ interface SocialRuleActions {
   activateRule: (ruleId: string) => void;
   getActiveRules: () => SocialRule[];
   getOverallIntensity: () => number;
+  getSocialRuleLevel: () => number;
   reset: () => void;
 }
 
@@ -70,6 +71,13 @@ export const useSocialRuleStore = create<SocialRuleState & SocialRuleActions>(
       const activeRules = get().rules.filter((rule) => rule.isActive);
       if (activeRules.length === 0) return 0;
       return activeRules.reduce((sum, rule) => sum + rule.intensity, 0) / activeRules.length;
+    },
+
+    getSocialRuleLevel: () => {
+      const rules = get().rules;
+      if (rules.length === 0) return 0;
+      const totalIntensity = rules.reduce((sum, rule) => sum + rule.intensity, 0);
+      return Math.min((totalIntensity / rules.length) * 100, 100);
     },
 
     reset: () => {

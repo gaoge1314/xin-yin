@@ -4,6 +4,8 @@ import { INNER_MONOLOGUES } from '../data/enlightenment/innerMonologues';
 import { useWillpowerStore } from './useWillpowerStore';
 import { useGameStore } from './useGameStore';
 import { useTimeStore } from './useTimeStore';
+import { usePlayerStore } from './usePlayerStore';
+import { useSceneStore } from './useSceneStore';
 import { INITIAL_WILLPOWER_MAX } from '../types/willpower';
 
 interface DustParticle {
@@ -24,6 +26,7 @@ interface EnlightenmentState {
   currentMonologue: string | null;
   isEnlightenmentComplete: boolean;
   hasTriggeredEnlightenment: boolean;
+  isPartialExperience: boolean;
 }
 
 interface EnlightenmentActions {
@@ -48,6 +51,7 @@ const initialState: EnlightenmentState = {
   currentMonologue: null,
   isEnlightenmentComplete: false,
   hasTriggeredEnlightenment: false,
+  isPartialExperience: false,
 };
 
 function getRandomPosition(): { x: number; y: number } {
@@ -68,11 +72,17 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
     ...initialState,
 
     startEnlightenment: () => {
+      const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+      const isPartial = connectionLevel < 30;
+
+      const particleCount = isPartial
+        ? Math.floor(Math.random() * 2) + 4
+        : Math.floor(Math.random() * 3) + 8;
+
       const particles: DustParticle[] = [];
-      const count = Math.floor(Math.random() * 3) + 8;
       const usedTexts: string[] = [];
 
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < particleCount; i++) {
         const pos = getRandomPosition();
         const text = getRandomText(usedTexts);
         usedTexts.push(text);
@@ -86,6 +96,12 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
         });
       }
 
+      if (isPartial) {
+        useSceneStore.getState().addNarrativeLog(
+          '他感到心中有尘，却无法完全看清——他和内心的声音还不够亲近。'
+        );
+      }
+
       set({
         isActive: true,
         currentPhase: 'falling',
@@ -94,6 +110,7 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
         shownMonologues: [],
         currentMonologue: null,
         isEnlightenmentComplete: false,
+        isPartialExperience: isPartial,
       });
     },
 
@@ -173,9 +190,18 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
     },
 
     completeEnlightenment: () => {
+      const isPartial = get().isPartialExperience;
+      if (isPartial) {
+        useSceneStore.getState().addNarrativeLog(
+          '他扫去了一些尘，但还有很多看不清。也许，等他更信任内心的声音...'
+        );
+      } else {
+        usePlayerStore.getState().triggerEnlightenment();
+      }
+
       set({
         isEnlightenmentComplete: true,
-        hasTriggeredEnlightenment: true,
+        hasTriggeredEnlightenment: !isPartial,
         isActive: false,
       });
     },
