@@ -4,7 +4,11 @@ import { useWillpowerStore } from '../../stores/useWillpowerStore';
 import { useTimeStore } from '../../stores/useTimeStore';
 import { useSceneStore } from '../../stores/useSceneStore';
 import { useEnlightenmentStore } from '../../stores/useEnlightenmentStore';
-import { CONNECTION_COLD_THRESHOLD, TRUST_LOW_THRESHOLD } from '../../types/trust';
+import { TRUST_LOW_THRESHOLD } from '../../types/trust';
+import { calculateDialogueConstraints } from '../../systems/dialogue/calculateConstraints';
+import { generateProtagonistResponse, inferEmotionalState } from '../../systems/dialogue/generateResponse';
+import { buildDialogueInputForPlayer } from '../../systems/dialogue/buildDialogueInput';
+import { useDialogueMemoryStore } from '../../systems/dialogue/dialogueMemoryCache';
 
 type Intensity = 'whisper' | 'normal' | 'earnest' | 'resonance';
 
@@ -36,19 +40,6 @@ const INTENSITY_NARRATIVE: Record<Intensity, string> = {
   resonance: '你的话与他心底的声音合而为一...',
 };
 
-const COLD_RESPONSES = [
-  '嗯。',
-  '知道了。',
-  '随便。',
-  '...哦。',
-  '再说吧。',
-  '无所谓。',
-  '就这样。',
-  '......',
-  '行吧。',
-  '我听到了。',
-];
-
 const INTENSITY_STYLES: Record<Intensity, string> = {
   whisper: 'border-white/20 text-white/40 hover:border-white/30 hover:text-white/50',
   normal: 'border-white/30 text-white/60 hover:border-calm/30 hover:text-calm/60',
@@ -74,8 +65,7 @@ export const TextInput: React.FC = () => {
 
   const trustLevel = usePlayerStore((s) => s.trustLevel);
   const hasEnlightenment = usePlayerStore((s) => s.hasEnlightenment);
-  const isColdResponse = trustLevel < CONNECTION_COLD_THRESHOLD;
-  const isLowTrust = trustLevel < TRUST_LOW_THRESHOLD && !isColdResponse;
+  const isLowTrust = trustLevel < TRUST_LOW_THRESHOLD;
 
   const getWillpowerPercent = useCallback((intensity: Intensity) => {
     return hasEnlightenment
@@ -116,10 +106,37 @@ export const TextInput: React.FC = () => {
     addInfluence(trimmed, intensity);
     addNarrativeLog(INTENSITY_NARRATIVE[intensity]);
 
-    if (usePlayerStore.getState().trustLevel < CONNECTION_COLD_THRESHOLD) {
-      const coldReply = COLD_RESPONSES[Math.floor(Math.random() * COLD_RESPONSES.length)];
-      addNarrativeLog(`他：${coldReply}`);
+    const dialogueInput = buildDialogueInputForPlayer(trimmed, intensity);
+    const constraints = calculateDialogueConstraints(dialogueInput);
+    const responseContext = {
+      speakerRole: 'player' as const,
+      speakerName: '心印',
+      npcContent: trimmed,
+      eventId: `player_input_${Date.now()}`,
+      constraints,
+    };
+    const protagonistResult = generateProtagonistResponse(responseContext, dialogueInput.triggeredTag);
+
+    addNarrativeLog(`他：${protagonistResult.text}`);
+
+    if (protagonistResult.innerVoice) {
+      addNarrativeLog(protagonistResult.innerVoice);
     }
+
+    if (protagonistResult.willpowerCost > 0) {
+      addNarrativeLog(`（回应消耗了${protagonistResult.willpowerCost}点意志力）`);
+    }
+
+    useDialogueMemoryStore.getState().addEntry({
+      speakerRole: 'player',
+      speakerName: '心印',
+      npcContent: trimmed,
+      protagonistResponse: protagonistResult.text,
+      triggeredTag: dialogueInput.triggeredTag,
+      emotionalState: inferEmotionalState(constraints),
+      day: useTimeStore.getState().totalDays,
+      hour: useTimeStore.getState().hour,
+    });
 
     setText('');
     setShowIntensity(false);
@@ -183,7 +200,7 @@ export const TextInput: React.FC = () => {
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            placeholder={isColdResponse ? '说些什么...但他可能不会在意。' : '说些什么，成为他心中的声音...'}
+            placeholder={isLowTrust ? '说些什么...但他可能不会在意。' : '说些什么，成为他心中的声音...'}
             className={`
               w-full bg-white/[0.03] border border-white/10 rounded px-3 py-2
               text-white/70 text-sm placeholder:text-white/20
@@ -207,12 +224,6 @@ export const TextInput: React.FC = () => {
           传达
         </button>
       </div>
-
-      {isColdResponse && (
-        <div className="mt-1 text-amber-600/60 text-xs tracking-wide">
-          他对你的声音很冷淡...
-        </div>
-      )}
 
       {isLowTrust && (
         <div className="mt-1 text-amber-500/50 text-xs tracking-wide">

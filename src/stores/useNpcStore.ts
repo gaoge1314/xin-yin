@@ -8,6 +8,11 @@ import { useCognitionStore } from './useCognitionStore';
 import { useWillpowerStore } from './useWillpowerStore';
 import { useOrganStore } from './useOrganStore';
 import { getDayOfWeek } from '../types/time';
+import { calculateDialogueConstraints } from '../systems/dialogue/calculateConstraints';
+import { generateProtagonistResponse } from '../systems/dialogue/generateResponse';
+import { buildDialogueInputForNpc, detectTriggeredTag } from '../systems/dialogue/buildDialogueInput';
+import type { DialogueConstraints } from '../types/dialogue';
+import { useDialogueMemoryStore } from '../systems/dialogue/dialogueMemoryCache';
 
 const FREQUENCY_DAYS: Record<NpcEventFrequency, number> = {
   daily: 1,
@@ -26,6 +31,10 @@ export interface NpcDialogEntry {
   eventId: string;
   effect?: NpcEvent['effect'];
   timestamp?: number;
+  protagonistResponse?: string;
+  protagonistInnerVoice?: string | null;
+  protagonistConstraints?: DialogueConstraints;
+  triggeredTag?: string | null;
 }
 
 export interface InteractionRecord {
@@ -191,6 +200,18 @@ export const useNpcStore = create<{
     const npcId = event.id.split('_')[0] as NpcKey;
     const npc = get().getNpc(npcId);
 
+    const dialogueInput = buildDialogueInputForNpc(npcId, event.id, event.content);
+    const constraints = calculateDialogueConstraints(dialogueInput);
+    const tagResult = detectTriggeredTag(event.content);
+    const responseContext = {
+      speakerRole: dialogueInput.speakerRole,
+      speakerName: npc?.name || '未知',
+      npcContent: event.content,
+      eventId: event.id,
+      constraints,
+    };
+    const protagonistResult = generateProtagonistResponse(responseContext, tagResult.tag);
+
     const dialogEntry: NpcDialogEntry = {
       npcId,
       npcName: npc?.name || '未知',
@@ -198,6 +219,10 @@ export const useNpcStore = create<{
       content: event.content,
       eventId: event.id,
       effect: event.effect,
+      protagonistResponse: protagonistResult.text,
+      protagonistInnerVoice: protagonistResult.innerVoice,
+      protagonistConstraints: protagonistResult.constraints,
+      triggeredTag: tagResult.tag,
     };
 
     const state = get();
@@ -216,6 +241,20 @@ export const useNpcStore = create<{
     if (!dialog) return;
 
     useSceneStore.getState().addNarrativeLog(dialog.content);
+
+    if (dialog.protagonistInnerVoice) {
+      useSceneStore.getState().addNarrativeLog(dialog.protagonistInnerVoice);
+    }
+
+    if (dialog.protagonistConstraints) {
+      if (dialog.protagonistConstraints.defensePosture === 'closed') {
+        useSceneStore.getState().addNarrativeLog('（他把自己封闭起来了。）');
+      }
+
+      if (dialog.protagonistConstraints.triggeredReaction) {
+        useSceneStore.getState().addNarrativeLog(`（${dialog.protagonistConstraints.triggeredReaction}）`);
+      }
+    }
 
     if (dialog.effect) {
       if (dialog.effect.trustChange) {
@@ -258,6 +297,19 @@ export const useNpcStore = create<{
       day: timeState.totalDays,
       hour: timeState.hour,
     };
+
+    if (dialog.protagonistResponse) {
+      useDialogueMemoryStore.getState().addEntry({
+        speakerRole: dialog.npcId,
+        speakerName: dialog.npcName,
+        npcContent: dialog.content,
+        protagonistResponse: dialog.protagonistResponse,
+        triggeredTag: dialog.triggeredTag ?? null,
+        emotionalState: useDialogueMemoryStore.getState().currentEmotionalState,
+        day: timeState.totalDays,
+        hour: timeState.hour,
+      });
+    }
 
     set((s) => ({
       activeNpcDialog: null,

@@ -1,5 +1,64 @@
 # 更新日志
 
+## [v4.7] - 2026-04-30
+
+### 新增功能
+
+#### 主角对话回应系统
+- 主角白明泽现在会对外界做出自己的回应，不再完全被动
+- 基于当前心理状态（意志力、心印/群则比、认知标签、连接度等）生成差异化、人格化的回应
+
+#### 对话约束计算层
+- `calculateDialogueConstraints()` 纯函数：6步约束计算
+  1. 能量等级：意志力 → depleted/low/moderate/sufficient
+  2. 防御姿态：10项条件累计加成 → open/normal/guarded/closed
+  3. 回应长度：4×4矩阵查表 → minimal/short/normal/extended
+  4. 服从意愿：群则/心印比 + 角色修正 → resistant/reluctant/neutral/willing
+  5. 触发反应：认知标签 + 强度 → 行为描述文本
+  6. 意志力消耗：指令型0.5-2.0倍率，非指令型0
+
+#### 主角回应模板库
+- 16种能量×防御组合通用回应（每种4-5条）
+- 4种角色特定回应（母亲/父亲/姐姐/心印）
+- 5种认知标签触发回应（自我价值/特殊性/无意义/学习/人际关系）
+- 沉默/不回应模板（depleted+closed时使用）
+- 每条回应配有内心独白（嘴上说的≠心里想的）
+
+#### 对话记忆缓存
+- 维护最近10轮对话摘要
+- 追踪当前情绪状态（烦躁/麻木/略微放松/平静/低落/焦虑/防御/脆弱）
+- 追踪对特定人的态度倾向（回避/抗拒/中立/信任/依赖）
+- 未解决对话线程追踪
+
+#### 群则值(herdLevel)追踪
+- 新增 `herdLevel` 状态（初始值50）
+- 每日基于社交规则强度和人格特质更新
+- 影响服从意愿计算
+
+#### UI集成
+- NPC对话弹窗显示主角回应（斜体+暗色区分）
+- 玩家输入后主角动态回应（替代固定冷模板）
+- 叙事日志显示主角内心独白和封闭状态提示
+
+### 文件变更
+
+#### 新增文件
+- `src/types/dialogue.ts` - 对话约束类型定义
+- `src/systems/dialogue/calculateConstraints.ts` - 约束计算纯函数
+- `src/systems/dialogue/generateResponse.ts` - 回应生成函数
+- `src/systems/dialogue/dialogueMemoryCache.ts` - 对话记忆缓存
+- `src/systems/dialogue/buildDialogueInput.ts` - DialogueInput工厂函数
+- `src/data/dialogue/protagonistResponses.ts` - 主角回应模板库
+
+#### 修改文件
+- `src/stores/usePlayerStore.ts` - 新增 herdLevel 状态和 updateHerdLevel() 方法
+- `src/stores/useNpcStore.ts` - NpcDialogEntry扩展主角回应字段，triggerEventAsDialog自动计算主角回应，dismissActiveDialog写入记忆缓存
+- `src/components/game/NpcDialogModal.tsx` - 显示主角回应和内心独白
+- `src/components/game/TextInput.tsx` - 固定冷回应替换为动态回应
+- `src/systems/gameLoop.ts` - dailyEvent调用updateHerdLevel()
+
+---
+
 ## [v4.6] - 2026-04-29
 
 ### 新增功能

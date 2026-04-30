@@ -41,6 +41,20 @@ export const NpcDialogModal: React.FC<NpcDialogModalProps> = ({
           </h2>
         </div>
 
+        {dialog.protagonistResponse && (
+          <div className="space-y-2 border-t border-white/5 pt-4">
+            <span className="text-xs text-white/30 tracking-wider">明泽</span>
+            <p className="text-white/50 text-sm italic tracking-wider leading-relaxed">
+              {dialog.protagonistResponse}
+            </p>
+            {dialog.protagonistInnerVoice && (
+              <p className="text-white/25 text-xs tracking-wider leading-relaxed">
+                {dialog.protagonistInnerVoice}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="flex justify-center">
           <button
             onClick={onDismiss}

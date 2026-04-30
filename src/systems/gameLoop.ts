@@ -230,6 +230,7 @@ class GameLoopManager {
     }
 
     usePlayerStore.getState().naturalTrustRecovery();
+    usePlayerStore.getState().updateHerdLevel();
 
     useNpcStore.getState().updateMealTracking();
 

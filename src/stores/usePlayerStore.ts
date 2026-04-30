@@ -10,6 +10,8 @@ import {
   TRUST_RECOVERY_RATE,
 } from '../types/trust';
 import { useCognitionStore } from './useCognitionStore';
+import { useSocialRuleStore } from './useSocialRuleStore';
+import { usePersonalityStore } from './usePersonalityStore';
 
 type Intensity = 'whisper' | 'normal' | 'earnest' | 'resonance';
 
@@ -40,6 +42,7 @@ interface PlayerActions {
   isHighConnection: () => boolean;
   triggerEnlightenment: () => void;
   setAtHome: (atHome: boolean) => void;
+  updateHerdLevel: () => void;
   reset: () => void;
 }
 
@@ -51,6 +54,7 @@ export const usePlayerStore = create<{
   consecutiveUtilitarian: number;
   hasEnlightenment: boolean;
   isAtHome: boolean;
+  herdLevel: number;
 } & PlayerActions>((set, get) => ({
   influences: [],
   xinYinLevel: 0,
@@ -59,6 +63,7 @@ export const usePlayerStore = create<{
   consecutiveUtilitarian: 0,
   hasEnlightenment: false,
   isAtHome: true,
+  herdLevel: 50,
 
   addInfluence: (text: string, intensity?: Intensity, targetActionId?: string) => {
     const resolvedIntensity = intensity ?? 'normal';
@@ -151,6 +156,29 @@ export const usePlayerStore = create<{
     set({ isAtHome: atHome });
   },
 
+  updateHerdLevel: () => {
+    const socialRuleStore = useSocialRuleStore.getState();
+    const personalityStore = usePersonalityStore.getState();
+
+    const activeRules = socialRuleStore.getActiveRules();
+    let herdFromRules = 50;
+
+    const oppressiveRule = activeRules.find((r: any) => r.id === 'oppressive_world');
+    if (oppressiveRule) {
+      herdFromRules += oppressiveRule.intensity * 20;
+    }
+
+    const utilitarianRule = activeRules.find((r: any) => r.id === 'utilitarian_relationship');
+    if (utilitarianRule) {
+      herdFromRules += utilitarianRule.intensity * 10;
+    }
+
+    const personalityModifier = personalityStore.meaningObsession * -10 + personalityStore.retreatInertia * 15;
+
+    const newHerd = Math.max(0, Math.min(100, herdFromRules + personalityModifier));
+    set({ herdLevel: newHerd });
+  },
+
   reset: () => {
     set({
       influences: [],
@@ -160,6 +188,7 @@ export const usePlayerStore = create<{
       consecutiveUtilitarian: 0,
       hasEnlightenment: false,
       isAtHome: true,
+      herdLevel: 50,
     });
   },
 }));
