@@ -89,6 +89,14 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
 
   saveGame: () => {
     const state = get();
+    const triggerState = (() => {
+      const { useTriggerStore } = require('./useTriggerStore');
+      const ts = useTriggerStore.getState();
+      return {
+        silentConsecutiveDays: ts.silentConsecutiveDays,
+        lastWillpowerValue: ts.lastWillpowerValue,
+      };
+    })();
     const saveData = {
       version: SAVE_VERSION,
       timestamp: Date.now(),
@@ -105,6 +113,7 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
         memories: state.memories,
         recallCooldown: state.recallCooldown,
         dreamCooldown: state.dreamCooldown,
+        triggerState,
       },
       history: {
         actions: state.actionHistory,
@@ -140,6 +149,18 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
         eventHistory: h.events,
         transformations: h.transformations,
       });
+
+      if (s.triggerState) {
+        const { useTriggerStore } = require('./useTriggerStore');
+        const triggerStore = useTriggerStore.getState();
+        if (s.triggerState.silentConsecutiveDays !== undefined) {
+          useTriggerStore.setState({ silentConsecutiveDays: s.triggerState.silentConsecutiveDays });
+        }
+        if (s.triggerState.lastWillpowerValue !== undefined) {
+          useTriggerStore.setState({ lastWillpowerValue: s.triggerState.lastWillpowerValue });
+        }
+      }
+
       return true;
     } catch {
       return false;

@@ -35,3 +35,6 @@ export type { EmotionTrigger, EmotionType, TriggeredEmotion } from './emotionTri
 export type { NpcRole, FamilyRole, NpcKey, NpcEventFrequency, NpcEvent, Npc } from './npc';
 
 export type { TaskTrack, TaskSource, TaskUrgency, PersonalPlanTerm, GameTask, PersonalPlan, TaskConflict } from './task';
+
+export type { TriggerType, InputBoxState, TriggerPriority, TriggerInfo, PerceptionContent, PlayerTriggerState, TriggerCooldown } from './playerTrigger';
+export { TRIGGER_INFO, TRIGGER_PRIORITY_ORDER, WILLPOWER_CRITICAL_THRESHOLD, WILLPOWER_DROP_THRESHOLD, CONNECTION_T06_THRESHOLD, CONNECTION_T06_HIGH_THRESHOLD, CONNECTION_T06_VERY_HIGH_THRESHOLD, CONNECTION_T07_THRESHOLD, TAG_TRIGGER_INTENSITY_THRESHOLD, SILENT_CONSECUTIVE_PENALTY_DAYS, SILENT_CONSECUTIVE_PENALTY, MIN_TRUST_FROM_SILENCE } from './playerTrigger';

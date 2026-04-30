@@ -3,9 +3,8 @@ import type { NpcKey } from '../../types/npc';
 import { useWillpowerStore } from '../../stores/useWillpowerStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useCognitionStore } from '../../stores/useCognitionStore';
-import { useTimeStore } from '../../stores/useTimeStore';
-import { useNpcStore } from '../../stores/useNpcStore';
 import { useDialogueMemoryStore } from './dialogueMemoryCache';
+import { useTriggerStore } from '../../stores/useTriggerStore';
 
 export function npcIdToSpeakerRole(npcId: NpcKey): SpeakerRole {
   switch (npcId) {
@@ -109,10 +108,11 @@ export function buildDialogueInputForNpc(npcId: NpcKey, eventId: string, npcCont
   };
 }
 
-export function buildDialogueInputForPlayer(playerText: string, intensity: string): DialogueInput {
+export function buildDialogueInputForPlayer(playerText: string): DialogueInput {
   const willpowerStore = useWillpowerStore.getState();
   const playerStore = usePlayerStore.getState();
   const dialogueMemoryStore = useDialogueMemoryStore.getState();
+  const triggerStore = useTriggerStore.getState();
   const triggeredTag = detectTriggeredTag(playerText);
   const recentEntries = dialogueMemoryStore.getRecentSummaries(3);
   const recentBehaviorPattern = recentEntries.length > 0
@@ -132,5 +132,6 @@ export function buildDialogueInputForPlayer(playerText: string, intensity: strin
     dialogueType: detectDialogueType(playerText),
     recentBehaviorPattern,
     consecutiveGoodSleep: willpowerStore.consecutiveGoodSleep,
+    triggerType: triggerStore.activeTrigger ?? undefined,
   };
 }

@@ -22,13 +22,13 @@ import { useTimeStore } from '../../stores/useTimeStore';
 import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
 import { useWorldEventStore } from '../../stores/useWorldEventStore';
 import { useNpcStore } from '../../stores/useNpcStore';
+import { useTriggerStore } from '../../stores/useTriggerStore';
 import { TIME_OF_DAY_LABELS } from '../../types/time';
 
 type PhaseUI = 'morning-ritual' | 'daytime' | 'evening-monologue' | 'dream-fragment' | 'default';
 
 export const CoreGameLoop: React.FC = () => {
   const [currentPhaseUI, setCurrentPhaseUI] = useState<PhaseUI>('default');
-  const [inputExpanded, setInputExpanded] = useState(true);
 
   useEffect(() => {
     gameLoop.start();
@@ -55,13 +55,11 @@ export const CoreGameLoop: React.FC = () => {
         const timeOfDay = useTimeStore.getState().getTimeOfDay();
         if (timeOfDay === 'DAYTIME') {
           setCurrentPhaseUI('daytime');
-          setInputExpanded(false);
           useTimeStore.getState().resume('morning-ritual');
           useTimeStore.getState().resume('evening-monologue');
           useTimeStore.getState().resume('dream-fragment');
         } else if (currentPhaseUI !== 'default') {
           setCurrentPhaseUI('default');
-          setInputExpanded(true);
         }
       }
     }, 1000);
@@ -74,6 +72,7 @@ export const CoreGameLoop: React.FC = () => {
     ? useWorldEventStore.getState().getActiveEvent()
     : null;
   const activeNpcDialog = useNpcStore((s) => s.activeNpcDialog);
+  const inputBoxState = useTriggerStore((s) => s.inputBoxState);
 
   useEffect(() => {
     if (activeEvent && activeEvent.choices && activeEvent.choices.length > 0) {
@@ -134,6 +133,10 @@ export const CoreGameLoop: React.FC = () => {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#0a0a0f] relative">
+      {inputBoxState === 'urgent' && (
+        <div className="absolute inset-0 pointer-events-none z-40 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]" />
+      )}
+
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
         <div className="flex items-center gap-3">
           <ClockDisplay />
@@ -162,21 +165,7 @@ export const CoreGameLoop: React.FC = () => {
           </div>
 
           <div className="border-t border-white/5 p-4">
-            {currentPhaseUI === 'daytime' && !inputExpanded ? (
-              <div className="text-center">
-                <button
-                  onClick={() => setInputExpanded(true)}
-                  className="
-                    text-white/20 text-xs hover:text-white/40
-                    transition-colors duration-300
-                  "
-                >
-                  打开输入框
-                </button>
-              </div>
-            ) : (
-              <TextInput />
-            )}
+            <TextInput />
           </div>
         </div>
 

@@ -8,6 +8,7 @@ export type DebugSectionId =
   | 'socialRule'
   | 'anchor'
   | 'eventTrigger'
+  | 'trigger'
   | 'scenario'
   | 'globalAction';
 
@@ -27,6 +28,7 @@ export const DEBUG_SECTION_LABELS: Record<DebugSectionId, string> = {
   socialRule: '群则',
   anchor: '心印锚点',
   eventTrigger: '事件触发',
+  trigger: '触发系统',
   scenario: '剧本快进',
   globalAction: '全局操作',
 };

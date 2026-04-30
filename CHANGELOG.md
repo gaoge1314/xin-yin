@@ -1,5 +1,75 @@
 # 更新日志
 
+## [v4.8] - 2026-04-30
+
+### 新增功能
+
+#### 心印触发机制系统（基于 v4.6 设计文档）
+
+核心设计原则：
+- **缝隙原则**：玩家只能在主角惯性运转出现缝隙时介入，不创造缝隙，只响应缝隙
+- **沉默是常态**：玩家大部分时间在观察，不回应不是失职，是等待对的时机
+- **感知层过滤**：玩家接收的不是客观事件，而是心印对这些事件的感知——它们"意味着什么"
+
+#### 输入框三种状态
+- **休眠**：屏幕边缘一个小光点，不可输入，鼠标悬停显示主角当前状态简述
+- **浮现**：光点闪烁或扩大为输入框，显示心印感知内容，可输入或关闭
+- **紧急**：输入框强制弹出，画面边缘变暗，必须回应或选择"沉默陪伴"
+
+#### 7种触发条件（T01-T07）
+| 触发ID | 触发类型 | 状态 | 优先级 | 触发条件 |
+|:---|:---|:---|:---|:---|
+| T01 | 早晨醒来 | 浮现 | 高 | 每日必触发，睡眠结算完成后 |
+| T02 | 意志力临界 | 紧急 | 最高 | 意志力≤15 或单次下降>40 |
+| T03 | 面临选择节点 | 浮现/紧急 | 高 | 任务冲突/两难选择 |
+| T04 | 回忆突现结束 | 紧急 | 最高 | 被动/主动回忆退去后 |
+| T05 | 社交触发认知标签 | 浮现 | 中 | tagTriggerIntensity≥4 |
+| T06 | 主角主动呼唤 | 浮现/紧急 | 中 | 连接度>40概率触发 |
+| T07 | 夜晚睡前 | 浮现 | 低 | 连接度≥25，主角准备入睡 |
+
+#### 心印感知内容生成
+- 每种触发类型生成心印视角的感知文本
+- 不是"发生了什么"，而是"这意味着什么"
+- 示例：母亲催吃饭 → "她不是在催饭，是在催他别死。"
+
+#### 沉默后果系统
+- 关闭浮现输入框 → 连接度-1
+- 连续7天关闭早晨触发 → 额外-5
+- 紧急触发超时不回应 → 连接度-2（封闭防御姿态时减半）
+- 长期全部沉默 → 连接度缓慢下降，最低5（心印不会完全消失）
+- 回应 → 根据触发类型和内容质量调整连接度
+
+#### 冷却机制
+- 每种触发类型独立冷却时间
+- 从浮现/紧急回到休眠后，同类触发条件在冷却期内不再触发
+- 不同类触发条件不受冷却影响
+
+### 文件变更
+
+#### 新增文件
+- `src/types/playerTrigger.ts` - 触发系统类型定义（7种触发类型、3种输入框状态、优先级、冷却等）
+- `src/stores/useTriggerStore.ts` - 触发系统 Zustand Store（状态转换、冷却管理、沉默追踪）
+- `src/systems/trigger/checkTriggers.ts` - 7种触发条件检测逻辑
+- `src/systems/trigger/generatePerception.ts` - 心印感知内容生成器
+- `src/components/debug/sections/TriggerSection.tsx` - 调试面板触发系统分区
+
+#### 修改文件
+- `src/components/game/TextInput.tsx` - 输入框三种状态渲染：休眠/浮现/紧急
+- `src/components/game/CoreGameLoop.tsx` - 紧急状态暗角效果，输入框显示逻辑与触发状态绑定
+- `src/components/game/MorningRitual.tsx` - 整合 T01 触发，显示心印感知内容，沉默惩罚
+- `src/components/narrative/EveningMonologue.tsx` - 整合 T07 触发，自由输入+沉默陪伴
+- `src/systems/gameLoop.ts` - 集成触发检测（每6小时检查），回忆结束后标记 pendingMemoryEnd，NPC事件后检查社交触发
+- `src/systems/dialogue/calculateConstraints.ts` - 触发类型影响防御姿态计算
+- `src/systems/dialogue/buildDialogueInput.ts` - 传递 triggerType 到对话约束系统
+- `src/stores/usePlayerStore.ts` - 信任度下限保护（最低5）
+- `src/types/dialogue.ts` - DialogueInput 新增 triggerType 字段
+- `src/types/save.ts` - 存档新增 triggerState 字段
+- `src/types/debug.ts` - 新增 trigger 调试分区
+- `src/types/index.ts` - 新类型导出
+- `src/components/debug/DebugPanel.tsx` - 集成 TriggerSection
+
+---
+
 ## [v4.7] - 2026-04-30
 
 ### 新增功能

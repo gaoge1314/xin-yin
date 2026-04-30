@@ -13,6 +13,10 @@ import { useHabitStore } from '../stores/useHabitStore';
 import { useNpcStore } from '../stores/useNpcStore';
 import { useWorldEventStore } from '../stores/useWorldEventStore';
 import { useTaskStore } from '../stores/useTaskStore';
+import { useTriggerStore } from '../stores/useTriggerStore';
+import { checkT01, checkT02, checkT03, checkT04, checkT05, checkT06, checkNpcSocialTrigger } from './trigger/checkTriggers';
+import { generatePerception } from './trigger/generatePerception';
+import { detectTriggeredTag } from './dialogue/buildDialogueInput';
 import type { Action, Outcome, ActionRecord, PlayerInfluence } from '../types/action';
 import type { CognitionId } from '../types/cognition';
 import type { OrganHealth } from '../types/organs';
@@ -86,6 +90,13 @@ class GameLoopManager {
 
     useNpcStore.getState().checkTimeSpecificEvents();
 
+    if (this.totalHours % 6 === 0) {
+      const triggerState = useTriggerStore.getState();
+      if (triggerState.inputBoxState === 'dormant') {
+        this.checkPlayerTriggers();
+      }
+    }
+
     if (this.totalHours % 720 === 0) {
       this.tickSkillCooldowns();
     }
@@ -157,6 +168,8 @@ class GameLoopManager {
       useSceneStore.getState().addNarrativeLog(
         `——"${selected.innerVoice}"`
       );
+
+      useTriggerStore.getState().setPendingMemoryEnd(true);
     }
   }
 
@@ -227,6 +240,12 @@ class GameLoopManager {
     } else {
       useWillpowerStore.getState().recordBadSleep();
       useSceneStore.getState().addNarrativeLog('你睡得很不安稳，辗转反侧。');
+    }
+
+    const t01Result = checkT01();
+    if (t01Result.shouldTrigger) {
+      const perception = generatePerception('T01', { reason: t01Result.reason });
+      useTriggerStore.getState().triggerEmerging('T01', perception);
     }
 
     usePlayerStore.getState().naturalTrustRecovery();
@@ -339,27 +358,69 @@ class GameLoopManager {
 
     this.checkEmotionTriggers(selectedAction, outcome);
     this.checkAnchorTriggers(selectedAction, outcome);
-    this.checkHighConnectionSeekHelp();
+    this.checkPlayerTriggers();
   }
 
   private checkHighConnectionSeekHelp() {
-    const playerState = usePlayerStore.getState();
-    if (!playerState.isHighConnection()) return;
-    if (Math.random() >= 0.15) return;
+    const t06Result = checkT06();
+    if (t06Result.shouldTrigger) {
+      const perception = generatePerception('T06', { reason: t06Result.reason });
+      const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+      if (connectionLevel > 60) {
+        useTriggerStore.getState().triggerUrgent('T06', perception);
+      } else {
+        useTriggerStore.getState().triggerEmerging('T06', perception);
+      }
+      useSceneStore.getState().addNarrativeLog('「他好像想对你说什么」');
+    }
+  }
 
-    const SEEK_HELP_PHRASES = [
-      '你觉得呢？',
-      '你怎么看？',
-      '我心里有些乱...你能帮我理清吗？',
-      '如果是你，你会怎么做？',
-      '我好像需要一个方向...',
-      '我好像听到你在说什么...也许你是对的。',
-    ];
-    const phrase = SEEK_HELP_PHRASES[Math.floor(Math.random() * SEEK_HELP_PHRASES.length)];
-    useSceneStore.getState().addNarrativeLog(
-      `「他主动向你求助」——${phrase}`
-    );
-    playerState.adjustTrust(3, 'seek_help');
+  private checkPlayerTriggers() {
+    const triggerStore = useTriggerStore.getState();
+    if (triggerStore.inputBoxState !== 'dormant') return;
+
+    const t02Result = checkT02();
+    if (t02Result.shouldTrigger) {
+      const perception = generatePerception('T02', { reason: t02Result.reason });
+      useTriggerStore.getState().triggerUrgent('T02', perception);
+      useSceneStore.getState().addNarrativeLog('（他快撑不住了）');
+      return;
+    }
+
+    const t03Result = checkT03();
+    if (t03Result.shouldTrigger) {
+      const perception = generatePerception('T03');
+      const conflicts = useTaskStore.getState().detectConflicts();
+      const isSevere = conflicts.length > 1;
+      if (isSevere) {
+        useTriggerStore.getState().triggerUrgent('T03', perception);
+      } else {
+        useTriggerStore.getState().triggerEmerging('T03', perception);
+      }
+      return;
+    }
+
+    if (triggerStore.pendingMemoryEnd) {
+      const t04Result = checkT04();
+      if (t04Result.shouldTrigger) {
+        const perception = generatePerception('T04');
+        useTriggerStore.getState().triggerUrgent('T04', perception);
+        triggerStore.setPendingMemoryEnd(false);
+        return;
+      }
+    }
+
+    if (triggerStore.pendingSocialTrigger) {
+      const t05Result = checkT05();
+      if (t05Result.shouldTrigger) {
+        const perception = generatePerception('T05', { tagName: triggerStore.pendingSocialTrigger });
+        useTriggerStore.getState().triggerEmerging('T05', perception);
+        triggerStore.setPendingSocialTrigger(null);
+        return;
+      }
+    }
+
+    this.checkHighConnectionSeekHelp();
   }
 
   private filterAvailableActions(
@@ -780,6 +841,13 @@ class GameLoopManager {
       const events = useNpcStore.getState().getFamilyEventByFrequency(freq as import('../types/npc').NpcEventFrequency);
       events.forEach((event) => {
         useNpcStore.getState().triggerEventAsDialog(event);
+
+        if (event.content) {
+          const triggeredResult = detectTriggeredTag(event.content);
+          if (triggeredResult.tag && checkNpcSocialTrigger(4, triggeredResult.tag)) {
+            useTriggerStore.getState().setPendingSocialTrigger(triggeredResult.tag);
+          }
+        }
       });
     }
 

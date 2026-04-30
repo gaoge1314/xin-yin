@@ -11,6 +11,7 @@ import { PlayerSection } from './sections/PlayerSection';
 import { SocialRuleSection } from './sections/SocialRuleSection';
 import { AnchorSection } from './sections/AnchorSection';
 import { EventTriggerSection } from './sections/EventTriggerSection';
+import { TriggerSection } from './sections/TriggerSection';
 import { ScenarioSection } from './sections/ScenarioSection';
 import { GlobalActionSection } from './sections/GlobalActionSection';
 
@@ -24,6 +25,7 @@ const SECTION_COMPONENTS: Record<DebugSectionId, React.FC> = {
   socialRule: SocialRuleSection,
   anchor: AnchorSection,
   eventTrigger: EventTriggerSection,
+  trigger: TriggerSection,
   scenario: ScenarioSection,
   globalAction: GlobalActionSection,
 };

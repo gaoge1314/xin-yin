@@ -3,6 +3,12 @@ import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useSceneStore } from '../../stores/useSceneStore';
 import { useTimeStore } from '../../stores/useTimeStore';
+import { useTriggerStore } from '../../stores/useTriggerStore';
+import { generateT07Perception } from '../../systems/trigger/generatePerception';
+import { calculateDialogueConstraints } from '../../systems/dialogue/calculateConstraints';
+import { generateProtagonistResponse, inferEmotionalState } from '../../systems/dialogue/generateResponse';
+import { buildDialogueInputForPlayer } from '../../systems/dialogue/buildDialogueInput';
+import { useDialogueMemoryStore } from '../../systems/dialogue/dialogueMemoryCache';
 import { TIME_OF_DAY_LABELS } from '../../types/time';
 
 interface MonologueLine {
@@ -38,20 +44,17 @@ const MONOLOGUE_TEMPLATES: MonologueLine[][] = [
   ],
 ];
 
-const RESPONSE_OPTIONS = [
-  { text: '你做得很好。', trustChange: 5, reason: 'evening_encouragement' },
-  { text: '我一直在。', trustChange: 8, reason: 'evening_presence' },
-  { text: '明天会更好的。', trustChange: 3, reason: 'evening_hope' },
-  { text: '（沉默陪伴）', trustChange: 2, reason: 'evening_silence' },
-];
-
 export const EveningMonologue: React.FC = () => {
   const [selectedResponse, setSelectedResponse] = useState<string | null>(null);
   const [visibleLines, setVisibleLines] = useState(0);
+  const [customInput, setCustomInput] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [monologueIndex] = useState(() => Math.floor(Math.random() * MONOLOGUE_TEMPLATES.length));
 
   const addNarrativeLog = useSceneStore((s) => s.addNarrativeLog);
 
-  const monologueGroup = MONOLOGUE_TEMPLATES[Math.floor(Math.random() * MONOLOGUE_TEMPLATES.length)];
+  const monologueGroup = MONOLOGUE_TEMPLATES[monologueIndex];
+  const perception = generateT07Perception();
 
   const visibleCount = Math.min(visibleLines, monologueGroup.length);
   if (visibleCount < monologueGroup.length) {
@@ -61,13 +64,50 @@ export const EveningMonologue: React.FC = () => {
   const finishEveningMonologue = () => {
     useDayPhaseStore.getState().markEveningMonologueShown();
     useTimeStore.getState().resume('evening-monologue');
+    useTriggerStore.getState().respondAndClose(false);
   };
 
-  const handleResponse = (option: typeof RESPONSE_OPTIONS[number]) => {
+  const handleCustomSubmit = () => {
+    const trimmed = customInput.trim();
+    if (!trimmed) return;
+
     if (selectedResponse) return;
-    setSelectedResponse(option.text);
-    addNarrativeLog(`夜——"${option.text}"`);
-    usePlayerStore.getState().adjustTrust(option.trustChange, option.reason);
+    setSelectedResponse(trimmed);
+    addNarrativeLog(`夜——"${trimmed}"`);
+
+    const dialogueInput = buildDialogueInputForPlayer(trimmed);
+    const constraints = calculateDialogueConstraints(dialogueInput);
+    const responseContext = {
+      speakerRole: 'player' as const,
+      speakerName: '心印',
+      npcContent: trimmed,
+      eventId: `evening_T07_${Date.now()}`,
+      constraints,
+    };
+    const protagonistResult = generateProtagonistResponse(responseContext, dialogueInput.triggeredTag);
+
+    addNarrativeLog(`他：${protagonistResult.text}`);
+
+    useDialogueMemoryStore.getState().addEntry({
+      speakerRole: 'player',
+      speakerName: '心印',
+      npcContent: trimmed,
+      protagonistResponse: protagonistResult.text,
+      triggeredTag: dialogueInput.triggeredTag,
+      emotionalState: inferEmotionalState(constraints),
+      day: useTimeStore.getState().totalDays,
+      hour: useTimeStore.getState().hour,
+    });
+
+    usePlayerStore.getState().adjustTrust(2, 'evening_warm_response');
+    usePlayerStore.getState().addInfluence(trimmed, 'whisper');
+  };
+
+  const handleSilentCompanion = () => {
+    if (selectedResponse) return;
+    setSelectedResponse('（沉默陪伴）');
+    addNarrativeLog('夜——你没有说话。但你在这里。');
+    useTriggerStore.getState().respondAndClose(true);
   };
 
   const handleNoResponse = () => {
@@ -83,6 +123,17 @@ export const EveningMonologue: React.FC = () => {
         <div className="text-white/30 text-xs tracking-widest text-center">
           {TIME_OF_DAY_LABELS.EVENING}
         </div>
+
+        {perception && (
+          <div className="p-3 rounded border border-calm/20 bg-calm/5">
+            <div className="text-calm/50 text-xs tracking-widest mb-2">
+              {perception.header}
+            </div>
+            {perception.body.map((line, i) => (
+              <p key={i} className="text-white/40 text-sm leading-relaxed">{line}</p>
+            ))}
+          </div>
+        )}
 
         <div className="space-y-3 min-h-[120px]">
           {monologueGroup.slice(0, visibleCount).map((line, i) => (
@@ -105,21 +156,61 @@ export const EveningMonologue: React.FC = () => {
         {allLinesShown && !selectedResponse && (
           <div className="space-y-3 animate-[fadeIn_0.5s_ease-out]">
             <p className="text-white/30 text-xs text-center">你想回应吗？</p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {RESPONSE_OPTIONS.map((option) => (
+
+            {showCustomInput ? (
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCustomSubmit();
+                  }}
+                  placeholder="轻声说些什么..."
+                  className="
+                    flex-1 bg-white/[0.03] border border-white/10 rounded px-3 py-2
+                    text-white/70 text-sm placeholder:text-white/20
+                    focus:outline-none focus:border-calm/30
+                    transition-all duration-300
+                  "
+                  autoFocus
+                />
                 <button
-                  key={option.text}
-                  onClick={() => handleResponse(option)}
+                  onClick={handleCustomSubmit}
+                  className="
+                    px-4 py-2 border border-calm/30 rounded text-calm/60 text-sm
+                    hover:border-calm/50 hover:text-calm/80
+                    transition-all duration-300
+                  "
+                >
+                  说
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 justify-center">
+                <button
+                  onClick={() => setShowCustomInput(true)}
                   className="
                     px-3 py-1.5 border border-white/10 rounded text-white/50 text-sm
                     hover:border-calm/30 hover:text-calm/70
                     transition-all duration-300
                   "
                 >
-                  {option.text}
+                  说些什么
                 </button>
-              ))}
-            </div>
+                <button
+                  onClick={handleSilentCompanion}
+                  className="
+                    px-3 py-1.5 border border-calm/20 rounded text-calm/40 text-sm
+                    hover:border-calm/30 hover:text-calm/60
+                    transition-all duration-300
+                  "
+                >
+                  沉默陪伴
+                </button>
+              </div>
+            )}
+
             <div className="text-center">
               <button
                 onClick={handleNoResponse}

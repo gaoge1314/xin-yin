@@ -4,6 +4,7 @@ import { useWillpowerStore } from '../../stores/useWillpowerStore';
 import { useTimeStore } from '../../stores/useTimeStore';
 import { useSceneStore } from '../../stores/useSceneStore';
 import { useEnlightenmentStore } from '../../stores/useEnlightenmentStore';
+import { useTriggerStore } from '../../stores/useTriggerStore';
 import { TRUST_LOW_THRESHOLD } from '../../types/trust';
 import { calculateDialogueConstraints } from '../../systems/dialogue/calculateConstraints';
 import { generateProtagonistResponse, inferEmotionalState } from '../../systems/dialogue/generateResponse';
@@ -47,11 +48,22 @@ const INTENSITY_STYLES: Record<Intensity, string> = {
   resonance: 'border-calm/50 text-calm hover:border-calm/70 hover:text-calm shadow-[0_0_12px_rgba(135,206,235,0.3)]',
 };
 
+const DORMANT_STATUS_MAP: Record<string, string> = {
+  T01: '等待清晨...',
+  T02: '他还在撑着',
+  T03: '他在犹豫',
+  T04: '回忆的余波',
+  T05: '内心被触动',
+  T06: '他在找你',
+  T07: '夜晚将至',
+};
+
 export const TextInput: React.FC = () => {
   const [text, setText] = useState('');
   const [showIntensity, setShowIntensity] = useState(false);
   const [canResonate, setCanResonate] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [hoverDormant, setHoverDormant] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const addInfluence = usePlayerStore((s) => s.addInfluence);
@@ -66,6 +78,12 @@ export const TextInput: React.FC = () => {
   const trustLevel = usePlayerStore((s) => s.trustLevel);
   const hasEnlightenment = usePlayerStore((s) => s.hasEnlightenment);
   const isLowTrust = trustLevel < TRUST_LOW_THRESHOLD;
+
+  const inputBoxState = useTriggerStore((s) => s.inputBoxState);
+  const activeTrigger = useTriggerStore((s) => s.activeTrigger);
+  const activePerception = useTriggerStore((s) => s.activePerception);
+  const dismissToDormant = useTriggerStore((s) => s.dismissToDormant);
+  const respondAndClose = useTriggerStore((s) => s.respondAndClose);
 
   const getWillpowerPercent = useCallback((intensity: Intensity) => {
     return hasEnlightenment
@@ -106,8 +124,8 @@ export const TextInput: React.FC = () => {
     addInfluence(trimmed, intensity);
     addNarrativeLog(INTENSITY_NARRATIVE[intensity]);
 
-    const dialogueInput = buildDialogueInputForPlayer(trimmed, intensity);
-    const constraints = calculateDialogueConstraints(dialogueInput);
+    const dialogueInput = buildDialogueInputForPlayer(trimmed);
+    const constraints = calculateDialogueConstraints(dialogueInput, dialogueInput.triggerType);
     const responseContext = {
       speakerRole: 'player' as const,
       speakerName: '心印',
@@ -143,7 +161,18 @@ export const TextInput: React.FC = () => {
     setCanResonate(false);
     setInputFocused(false);
     setIsFocused(false);
-  }, [text, willpowerCurrent, consumeWillpower, interruptRecovery, addInfluence, addNarrativeLog, setInputFocused, getWillpowerPercent]);
+
+    respondAndClose(false);
+  }, [text, willpowerCurrent, consumeWillpower, interruptRecovery, addInfluence, addNarrativeLog, setInputFocused, getWillpowerPercent, respondAndClose]);
+
+  const handleSilentCompanion = useCallback(() => {
+    addNarrativeLog('你没有说话。但你在这里。他感觉到了。');
+    respondAndClose(true);
+  }, [addNarrativeLog, respondAndClose]);
+
+  const handleDismiss = useCallback(() => {
+    dismissToDormant();
+  }, [dismissToDormant]);
 
   const handleCancel = useCallback(() => {
     setShowIntensity(false);
@@ -177,9 +206,48 @@ export const TextInput: React.FC = () => {
     ? ['whisper', 'normal', 'earnest', 'resonance']
     : ['whisper', 'normal', 'earnest'];
 
+  if (inputBoxState === 'dormant') {
+    return (
+      <div className="flex items-center justify-center py-3">
+        <div
+          className="relative group cursor-default"
+          onMouseEnter={() => setHoverDormant(true)}
+          onMouseLeave={() => setHoverDormant(false)}
+        >
+          <div className="w-2 h-2 rounded-full bg-calm/30 animate-pulse" />
+          <div className="absolute w-4 h-4 -inset-1 rounded-full bg-calm/10 animate-[ping_3s_ease-out_infinite]" />
+
+          {hoverDormant && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 bg-black/80 border border-white/10 rounded text-white/40 text-xs">
+              {activeTrigger ? DORMANT_STATUS_MAP[activeTrigger] || '心印在等待' : '心印在沉默中'}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const isUrgent = inputBoxState === 'urgent';
+
   return (
-    <div className="relative">
-      {isFocused && (
+    <div className={`relative ${isUrgent ? 'animate-[fadeIn_0.3s_ease-out]' : ''}`}>
+      {activePerception && (
+        <div className={`mb-3 p-3 rounded border ${isUrgent ? 'border-amber-500/30 bg-amber-500/5' : 'border-calm/20 bg-calm/5'}`}>
+          <div className={`text-xs tracking-widest mb-2 ${isUrgent ? 'text-amber-400/60' : 'text-calm/50'}`}>
+            {activePerception.header}
+          </div>
+          {activePerception.body.map((line, i) => (
+            <p key={i} className={`text-sm ${isUrgent ? 'text-white/60' : 'text-white/40'} leading-relaxed`}>
+              {line}
+            </p>
+          ))}
+          <div className={`mt-2 text-xs ${isUrgent ? 'text-amber-400/40' : 'text-calm/30'}`}>
+            {activePerception.hint}
+          </div>
+        </div>
+      )}
+
+      {isFocused && !showIntensity && (
         <div className="absolute -top-6 left-0 text-calm/40 text-xs tracking-widest animate-pulse">
           心印之声
         </div>
@@ -202,11 +270,12 @@ export const TextInput: React.FC = () => {
             onBlur={handleBlur}
             placeholder={isLowTrust ? '说些什么...但他可能不会在意。' : '说些什么，成为他心中的声音...'}
             className={`
-              w-full bg-white/[0.03] border border-white/10 rounded px-3 py-2
+              w-full bg-white/[0.03] border rounded px-3 py-2
               text-white/70 text-sm placeholder:text-white/20
               focus:outline-none focus:border-calm/30
               resize-none
               transition-all duration-300
+              ${isUrgent ? 'border-amber-500/30 focus:border-amber-500/50' : 'border-white/10'}
             `}
             rows={1}
           />
@@ -214,12 +283,14 @@ export const TextInput: React.FC = () => {
         <button
           onClick={handlePrepareSend}
           disabled={!text.trim() || showIntensity}
-          className="
-            px-4 py-2 border border-white/10 rounded text-white/30 text-sm
-            hover:border-calm/30 hover:text-calm/60
+          className={`
+            px-4 py-2 border rounded text-sm
             disabled:opacity-30 disabled:cursor-not-allowed
             transition-all duration-300
-          "
+            ${isUrgent
+              ? 'border-amber-500/30 text-amber-400/60 hover:border-amber-500/50 hover:text-amber-400/80'
+              : 'border-white/10 text-white/30 hover:border-calm/30 hover:text-calm/60'}
+          `}
         >
           传达
         </button>
@@ -266,6 +337,35 @@ export const TextInput: React.FC = () => {
           >
             取消
           </button>
+        </div>
+      )}
+
+      {!showIntensity && (
+        <div className="mt-2 flex gap-3 items-center">
+          {isUrgent && (
+            <button
+              onClick={handleSilentCompanion}
+              className="
+                px-3 py-1.5 border border-calm/20 rounded text-calm/40 text-sm
+                hover:border-calm/30 hover:text-calm/60
+                transition-all duration-300
+              "
+            >
+              沉默陪伴
+            </button>
+          )}
+
+          {!isUrgent && (
+            <button
+              onClick={handleDismiss}
+              className="
+                text-white/20 text-xs hover:text-white/30
+                transition-colors duration-300
+              "
+            >
+              关闭
+            </button>
+          )}
         </div>
       )}
     </div>

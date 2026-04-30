@@ -1,6 +1,7 @@
 import type { DialogueInput, DialogueConstraints, EnergyLevel, DefensePosture, ResponseLength, ComplianceWillingness } from '../../types/dialogue';
+import type { TriggerType } from '../../types/playerTrigger';
 
-export function calculateDialogueConstraints(input: DialogueInput): DialogueConstraints {
+export function calculateDialogueConstraints(input: DialogueInput, triggerType?: TriggerType): DialogueConstraints {
   const {
     currentWillpower: willpower,
     currentImprint: imprintLevel,
@@ -39,6 +40,20 @@ export function calculateDialogueConstraints(input: DialogueInput): DialogueCons
   if (consecutiveGoodSleep >= 3) defenseModifier -= 1;
   if (dialogueType === "command") defenseModifier += 1;
   if (dialogueType === "sharing") defenseModifier -= 1;
+
+  if (triggerType === 'T02') {
+    if (connectionLevel > 50) {
+      defenseModifier -= 2;
+    } else {
+      defenseModifier += 1;
+    }
+  }
+  if (triggerType === 'T04') {
+    defenseModifier -= 2;
+  }
+  if (triggerType === 'T05' && triggeredTag !== null) {
+    defenseModifier += 1;
+  }
 
   let defensePosture: DefensePosture;
   if (defenseModifier <= -2) {

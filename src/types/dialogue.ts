@@ -23,6 +23,7 @@ export interface DialogueInput {
   dialogueType: DialogueType;
   recentBehaviorPattern: string;
   consecutiveGoodSleep: number;
+  triggerType?: import('./playerTrigger').TriggerType;
 }
 
 export interface DialogueConstraints {

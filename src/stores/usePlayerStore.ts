@@ -107,7 +107,8 @@ export const usePlayerStore = create<{
 
   adjustTrust: (delta: number, reason?: string) => {
     set((state) => {
-      const newLevel = Math.max(0, Math.min(100, state.trustLevel + delta));
+      const minTrust = 5;
+      const newLevel = Math.max(minTrust, Math.min(100, state.trustLevel + delta));
       return { trustLevel: newLevel, trustChangeReason: reason };
     });
   },

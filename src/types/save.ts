@@ -5,6 +5,7 @@ import type { OrganHealth } from './organs';
 import type { PlayerInfluence, ActionRecord } from './action';
 import type { DreamVision, Memory } from './skill';
 import type { EventRecord } from './event';
+import type { PlayerTriggerState } from './playerTrigger';
 
 export interface SaveData {
   version: string;
@@ -22,6 +23,7 @@ export interface SaveData {
     memories: Memory[];
     recallCooldown: number;
     dreamCooldown: number;
+    triggerState: Partial<PlayerTriggerState>;
   };
   history: {
     actions: ActionRecord[];
