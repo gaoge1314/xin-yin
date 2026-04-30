@@ -124,7 +124,7 @@ export function generateT03Perception(): PerceptionContent {
 
   if (conflicts.length > 0) {
     const conflict = conflicts[0];
-    body.push(`一边是${conflict.worldTaskTitle || '外部的期待'}，一边是${conflict.personalPlanTitle || '他自己的打算'}。`);
+    body.push(`一边是${conflict.worldTaskId || '外部的期待'}，一边是${conflict.personalPlanContent || '他自己的打算'}。`);
     body.push('两个方向在拉扯他。不是利弊的问题——是他在怕什么。');
   } else {
     body.push('面前有两条路，他不知道该走哪条。');

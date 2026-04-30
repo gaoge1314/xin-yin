@@ -135,6 +135,7 @@ const SPEAKER_RESPONSES: Record<SpeakerRole, ResponseTemplate[]> = {
     { text: "…再说说。", innerVoice: "（想听更多，虽然嘴上不说。）", speakerRole: 'player' },
     { text: "如果你说的是真的…那为什么这么难？", innerVoice: "（在质疑，也在渴望。）", speakerRole: 'player' },
   ],
+  npc: [],
 };
 
 const TAG_TRIGGERED_RESPONSES: Record<string, ResponseTemplate[]> = {
@@ -190,4 +191,5 @@ export function getResponseTemplates(): ResponseTemplate[] {
   ];
 }
 
-export { ResponseTemplate, GENERAL_RESPONSES, SPEAKER_RESPONSES, TAG_TRIGGERED_RESPONSES, SILENCE_RESPONSES };
+export type { ResponseTemplate };
+export { GENERAL_RESPONSES, SPEAKER_RESPONSES, TAG_TRIGGERED_RESPONSES, SILENCE_RESPONSES };

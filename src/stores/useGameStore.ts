@@ -18,6 +18,7 @@ import {
 import { INITIAL_ORGAN_HEALTH } from '../types/organs';
 import { START_AGE, START_YEAR } from '../types/time';
 import { SAVE_VERSION, SAVE_KEY } from '../types/save';
+import { useTriggerStore } from './useTriggerStore';
 
 interface GameActions {
   newGame: () => void;
@@ -90,7 +91,6 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
   saveGame: () => {
     const state = get();
     const triggerState = (() => {
-      const { useTriggerStore } = require('./useTriggerStore');
       const ts = useTriggerStore.getState();
       return {
         silentConsecutiveDays: ts.silentConsecutiveDays,
@@ -151,8 +151,6 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
       });
 
       if (s.triggerState) {
-        const { useTriggerStore } = require('./useTriggerStore');
-        const triggerStore = useTriggerStore.getState();
         if (s.triggerState.silentConsecutiveDays !== undefined) {
           useTriggerStore.setState({ silentConsecutiveDays: s.triggerState.silentConsecutiveDays });
         }

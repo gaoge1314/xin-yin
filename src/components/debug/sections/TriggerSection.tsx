@@ -1,17 +1,17 @@
-import { useTriggerStore } from '../../stores/useTriggerStore';
+import { useTriggerStore, type TriggerStoreState } from '../../../stores/useTriggerStore';
 import { TRIGGER_INFO, type TriggerType } from '../../../types/playerTrigger';
 import { generatePerception } from '../../../systems/trigger/generatePerception';
 
 const TRIGGER_TYPES: TriggerType[] = ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07'];
 
 export const TriggerSection: React.FC = () => {
-  const inputBoxState = useTriggerStore((s) => s.inputBoxState);
-  const activeTrigger = useTriggerStore((s) => s.activeTrigger);
-  const silentConsecutiveDays = useTriggerStore((s) => s.silentConsecutiveDays);
-  const cooldowns = useTriggerStore((s) => s.cooldowns);
-  const dailyTriggersUsed = useTriggerStore((s) => s.dailyTriggersUsed);
-  const ignoredToday = useTriggerStore((s) => s.ignoredToday);
-  const triggerQueue = useTriggerStore((s) => s.triggerQueue);
+  const inputBoxState = useTriggerStore((s: TriggerStoreState) => s.inputBoxState);
+  const activeTrigger = useTriggerStore((s: TriggerStoreState) => s.activeTrigger);
+  const silentConsecutiveDays = useTriggerStore((s: TriggerStoreState) => s.silentConsecutiveDays);
+  const cooldowns = useTriggerStore((s: TriggerStoreState) => s.cooldowns);
+  const dailyTriggersUsed = useTriggerStore((s: TriggerStoreState) => s.dailyTriggersUsed);
+  const ignoredToday = useTriggerStore((s: TriggerStoreState) => s.ignoredToday);
+  const triggerQueue = useTriggerStore((s: TriggerStoreState) => s.triggerQueue);
 
   const handleForceState = (state: 'dormant' | 'emerging' | 'urgent') => {
     useTriggerStore.setState({ inputBoxState: state });
@@ -41,7 +41,7 @@ export const TriggerSection: React.FC = () => {
         <div className="text-white/40 text-xs">连续沉默天数: <span className="text-amber-400/60">{silentConsecutiveDays}</span></div>
         <div className="text-white/40 text-xs">今日已触发: <span className="text-calm/60">{dailyTriggersUsed.join(', ') || '无'}</span></div>
         <div className="text-white/40 text-xs">今日已忽略: <span className="text-amber-400/60">{ignoredToday.join(', ') || '无'}</span></div>
-        <div className="text-white/40 text-xs">冷却中: <span className="text-white/30">{cooldowns.map(c => c.triggerType).join(', ') || '无'}</span></div>
+        <div className="text-white/40 text-xs">冷却中: <span className="text-white/30">{cooldowns.map((c: {triggerType: string}) => c.triggerType).join(', ') || '无'}</span></div>
         <div className="text-white/40 text-xs">队列: <span className="text-white/30">{triggerQueue.join(', ') || '空'}</span></div>
       </div>
 

@@ -82,7 +82,7 @@ export function detectTriggeredTag(content: string): { tag: string | null; inten
   return { tag: bestTag, intensity: Math.min(bestCount * 2, 10) };
 }
 
-export function buildDialogueInputForNpc(npcId: NpcKey, eventId: string, npcContent: string): DialogueInput {
+export function buildDialogueInputForNpc(npcId: NpcKey, _eventId: string, npcContent: string): DialogueInput {
   const willpowerStore = useWillpowerStore.getState();
   const playerStore = usePlayerStore.getState();
   const dialogueMemoryStore = useDialogueMemoryStore.getState();

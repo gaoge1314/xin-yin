@@ -30,7 +30,7 @@ interface TriggerActions {
   reset: () => void;
 }
 
-export const useTriggerStore = create<{
+type TriggerStoreState = {
   inputBoxState: InputBoxState;
   activeTrigger: TriggerType | null;
   activePerception: PerceptionContent | null;
@@ -42,7 +42,11 @@ export const useTriggerStore = create<{
   lastWillpowerValue: number;
   pendingMemoryEnd: boolean;
   pendingSocialTrigger: string | null;
-} & TriggerActions>((set, get) => ({
+} & TriggerActions;
+
+export type { TriggerStoreState };
+
+export const useTriggerStore = create<TriggerStoreState>((set, get) => ({
   inputBoxState: 'dormant',
   activeTrigger: null,
   activePerception: null,
@@ -109,7 +113,7 @@ export const useTriggerStore = create<{
       }));
 
       if (triggerType === 'T01') {
-        const newSilentDays = prev.silentConsecutiveDays + 1;
+        const newSilentDays = state.silentConsecutiveDays + 1;
         set({ silentConsecutiveDays: newSilentDays });
 
         usePlayerStore.getState().adjustTrust(-1, 'dismiss_emerging');

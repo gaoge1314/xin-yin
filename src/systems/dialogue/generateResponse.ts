@@ -1,8 +1,7 @@
-import type { DialogueConstraints, ProtagonistResponseContext, EnergyLevel, DefensePosture, SpeakerRole, ResponseLength } from '../../types/dialogue';
+import type { DialogueConstraints, ProtagonistResponseContext, SpeakerRole, ResponseLength } from '../../types/dialogue';
 import { getResponseTemplates, type ResponseTemplate } from '../../data/dialogue/protagonistResponses';
 import { useDialogueMemoryStore, type EmotionalState, type AttitudeToward } from './dialogueMemoryCache';
 import { useWillpowerStore } from '../../stores/useWillpowerStore';
-import { usePlayerStore } from '../../stores/usePlayerStore';
 
 export interface ProtagonistResponse {
   text: string;
@@ -117,7 +116,7 @@ const COMPLIANCE_ORDER: Record<string, number> = {
   willing: 3,
 };
 
-export function inferAttitudeToward(constraints: DialogueConstraints, speakerRole: SpeakerRole): AttitudeToward {
+export function inferAttitudeToward(constraints: DialogueConstraints, _speakerRole: SpeakerRole): AttitudeToward {
   const { defensePosture, complianceWillingness } = constraints;
 
   if (defensePosture === 'closed') return '回避';
