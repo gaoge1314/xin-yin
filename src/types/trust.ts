@@ -44,3 +44,19 @@ export function getConnectionTier(level: number): ConnectionTier {
   );
   return threshold ? threshold.tier : '陌路';
 }
+
+export const CONNECTION_TIER_WEIGHTS: Record<ConnectionTier, number> = {
+  '陌路': 0.3,
+  '疏远': 0.5,
+  '倾听': 0.7,
+  '信任': 0.9,
+  '共生': 1.0,
+};
+
+export const CONNECTION_TIER_XINYIN_PROBABILITY: Record<ConnectionTier, number> = {
+  '陌路': 0.15,
+  '疏远': 0.30,
+  '倾听': 0.50,
+  '信任': 0.70,
+  '共生': 0.90,
+};

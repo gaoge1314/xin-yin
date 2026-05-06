@@ -5,6 +5,8 @@ const DUST_TYPE_COLORS: Record<DustType, string> = {
   '我执': 'text-purple-400/60',
   '名': 'text-blue-400/60',
   '情': 'text-pink-400/60',
+  '怨': 'text-red-400/60',
+  '惧': 'text-yellow-400/60',
 };
 
 export const CognitionPanel: React.FC = () => {

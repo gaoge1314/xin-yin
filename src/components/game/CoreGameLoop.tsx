@@ -16,6 +16,10 @@ import { TaskPanel } from './TaskPanel';
 import { WorldInfoPanel } from './WorldInfoPanel';
 import { RecentInteractionsPanel } from './RecentInteractionsPanel';
 import { CollapsiblePanel } from '../ui/CollapsiblePanel';
+import { DustListPanel } from './DustListPanel';
+import { VagusNerveMoment } from './VagusNerveMoment';
+import { DeepNumbnessOverlay } from './DeepNumbnessOverlay';
+import { MicroEnlightenmentNarrative } from './MicroEnlightenmentNarrative';
 import { gameLoop } from '../../systems/gameLoop';
 import { useTimeStore } from '../../stores/useTimeStore';
 import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
@@ -47,6 +51,8 @@ const TIER_BAR_HEX: Record<ConnectionTier, string> = {
 
 export const CoreGameLoop: React.FC = () => {
   const [currentPhaseUI, setCurrentPhaseUI] = useState<PhaseUI>('default');
+  const [microNarrative, setMicroNarrative] = useState<string | null>(null);
+  const [tagLoosened, setTagLoosened] = useState(false);
 
   useEffect(() => {
     gameLoop.start();
@@ -260,6 +266,15 @@ export const CoreGameLoop: React.FC = () => {
           </div>
         </CollapsiblePanel>
       </div>
+
+      <DustListPanel />
+      <VagusNerveMoment />
+      <DeepNumbnessOverlay />
+      <MicroEnlightenmentNarrative
+        narrative={microNarrative}
+        tagLoosened={tagLoosened}
+        onDismiss={() => { setMicroNarrative(null); setTagLoosened(false); }}
+      />
 
       {renderPhaseOverlay()}
     </div>

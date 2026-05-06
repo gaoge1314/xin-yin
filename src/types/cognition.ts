@@ -1,4 +1,4 @@
-export type DustType = '我执' | '名' | '情';
+export type DustType = '我执' | '名' | '情' | '怨' | '惧';
 
 export interface Cognition {
   id: string;
@@ -12,6 +12,7 @@ export interface Cognition {
   isUnlocked: boolean;
   progressCount: number;
   isTransformed: boolean;
+  isRelieved: boolean;
   lastActionId?: string;
 }
 

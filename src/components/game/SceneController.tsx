@@ -19,9 +19,7 @@ import { RooftopScene } from './RooftopScene';
 import { CauseModeScene } from './CauseModeScene';
 import { GameOverScene } from './GameOverScene';
 import { AwakeningScene } from './AwakeningScene';
-import { EnlightenmentFalling } from './enlightenment/EnlightenmentFalling';
 import { EnlightenmentSweeping } from './enlightenment/EnlightenmentSweeping';
-import { EnlightenmentAwakening } from './enlightenment/EnlightenmentAwakening';
 
 function resetAllStores() {
   useTimeStore.getState().reset();
@@ -87,12 +85,8 @@ export const SceneController: React.FC = () => {
         return <GameOverScene onReturnToMenu={handleReturnToMenu} />;
       case 'prologue-awakening':
         return <AwakeningScene onAwakeningComplete={handleAwakeningComplete} />;
-      case 'enlightenment-falling':
-        return <EnlightenmentFalling />;
       case 'enlightenment-sweeping':
         return <EnlightenmentSweeping />;
-      case 'enlightenment-awakening':
-        return <EnlightenmentAwakening />;
       default:
         return null;
     }

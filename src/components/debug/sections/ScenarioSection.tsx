@@ -26,7 +26,7 @@ export const ScenarioSection: React.FC = () => {
     useSceneStore.getState().setPhase('core-loop');
   };
 
-  const handleJumpToEnlightenment = () => {
+  const handleJumpToSweepDust = () => {
     useWillpowerStore.getState().reset();
     useWillpowerStore.setState({ max: 60, current: 60 });
     useTimeStore.getState().reset();
@@ -34,8 +34,8 @@ export const ScenarioSection: React.FC = () => {
     usePlayerStore.getState().reset();
     useGameStore.getState().newGame();
     useGameStore.setState({ dreamCooldown: 1 });
-    useEnlightenmentStore.getState().startEnlightenment();
-    useSceneStore.getState().setPhase('enlightenment-falling');
+    useEnlightenmentStore.getState().enterSweepDust();
+    useSceneStore.getState().setPhase('enlightenment-sweeping');
   };
 
   const handleJumpToEnding = () => {
@@ -51,10 +51,10 @@ export const ScenarioSection: React.FC = () => {
         跳转到核心循环
       </button>
       <button
-        onClick={handleJumpToEnlightenment}
+        onClick={handleJumpToSweepDust}
         className="w-full text-left px-2 py-1 text-xs text-white/60 hover:text-amber-400 hover:bg-amber-500/10 rounded transition-colors"
       >
-        跳转到龙场悟道
+        跳转到扫尘
       </button>
       <button
         onClick={handleJumpToEnding}

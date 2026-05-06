@@ -16,9 +16,9 @@ export const EventTriggerSection: React.FC = () => {
   const [selectedAnchor, setSelectedAnchor] = useState('');
   const anchors = useAnchorStore((s) => s.anchors);
 
-  const handleTriggerEnlightenment = () => {
-    useEnlightenmentStore.getState().startEnlightenment();
-    useSceneStore.getState().setPhase('enlightenment-falling');
+  const handleTriggerSweepDust = () => {
+    useEnlightenmentStore.getState().enterSweepDust();
+    useSceneStore.getState().setPhase('enlightenment-sweeping');
   };
 
   const handleAdvanceSeason = () => {
@@ -80,10 +80,10 @@ export const EventTriggerSection: React.FC = () => {
   return (
     <div>
       <button
-        onClick={handleTriggerEnlightenment}
+        onClick={handleTriggerSweepDust}
         className="w-full text-left px-2 py-1 text-xs text-white/60 hover:text-amber-400 hover:bg-amber-500/10 rounded transition-colors"
       >
-        触发龙场悟道
+        触发扫尘
       </button>
       <button
         onClick={handleAdvanceSeason}

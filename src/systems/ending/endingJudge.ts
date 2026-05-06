@@ -5,7 +5,6 @@ import { useWillpowerStore } from '../../stores/useWillpowerStore';
 import { useGameStore } from '../../stores/useGameStore';
 import { useSocialRuleStore } from '../../stores/useSocialRuleStore';
 import { useHabitStore } from '../../stores/useHabitStore';
-import { useEnlightenmentStore } from '../../stores/useEnlightenmentStore';
 import { useSceneStore } from '../../stores/useSceneStore';
 
 export function gatherCriteria(): EndingCriteria {
@@ -14,7 +13,6 @@ export function gatherCriteria(): EndingCriteria {
   const gameState = useGameStore.getState();
   const socialRuleState = useSocialRuleStore.getState();
   const habitState = useHabitStore.getState();
-  const enlightenmentState = useEnlightenmentStore.getState();
 
   const healedPainfulCount = gameState.memories.filter(
     (m) => m.type === 'painful' && m.isHealed
@@ -26,7 +24,7 @@ export function gatherCriteria(): EndingCriteria {
     willpowerMax: willpowerState.max,
     healedPainfulCount,
     connectionLevel: playerState.getConnectionLevel(),
-    hasEnlightenment: enlightenmentState.hasTriggeredEnlightenment,
+    hasEnlightenment: playerState.hasEnlightenment,
     positiveHabitCount: habitState.getPositiveHabitCount(),
   };
 }

@@ -48,9 +48,7 @@ export type GamePhase =
   | 'prologue-gameover'
   | 'prologue-awakening'
   | 'core-loop'
-  | 'enlightenment-falling'
   | 'enlightenment-sweeping'
-  | 'enlightenment-awakening'
   | 'ending';
 
 export const SAVE_VERSION = '1.0.0';

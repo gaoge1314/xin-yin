@@ -107,9 +107,9 @@ export const TextInput: React.FC = () => {
   const handlePrepareSend = useCallback(() => {
     if (!text.trim()) return;
 
-    if (text.trim() === '测试：龙场悟道') {
-      useEnlightenmentStore.getState().startEnlightenment();
-      setPhase('enlightenment-falling');
+    if (text.trim() === '测试：扫尘') {
+      useEnlightenmentStore.getState().enterSweepDust();
+      setPhase('enlightenment-sweeping');
       setText('');
       return;
     }

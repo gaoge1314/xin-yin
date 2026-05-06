@@ -5,7 +5,6 @@ import { useOrganStore } from '../stores/useOrganStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { useSceneStore } from '../stores/useSceneStore';
 import { useGameStore } from '../stores/useGameStore';
-import { useEnlightenmentStore } from '../stores/useEnlightenmentStore';
 import { usePersonalityStore } from '../stores/usePersonalityStore';
 import { useSocialRuleStore } from '../stores/useSocialRuleStore';
 import { useAnchorStore } from '../stores/useAnchorStore';
@@ -205,18 +204,6 @@ class GameLoopManager {
     });
 
     this.checkFamilyEvents();
-
-    const enlightenmentState = useEnlightenmentStore.getState();
-    if (
-      !enlightenmentState.hasTriggeredEnlightenment &&
-      enlightenmentState.checkTriggerConditions()
-    ) {
-      useEnlightenmentStore.getState().startEnlightenment();
-      this.stop();
-      useSceneStore.getState().setPhase('enlightenment-falling');
-      useSceneStore.getState().addNarrativeLog('那天夜里，他突然无法入睡。');
-      return;
-    }
 
     const willpowerState = useWillpowerStore.getState();
     const organState = useOrganStore.getState();

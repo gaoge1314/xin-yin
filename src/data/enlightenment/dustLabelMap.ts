@@ -10,6 +10,8 @@ export const DUST_LABEL_MAP: Record<string, string[]> = {
   relationship: ['没人真正爱我', '我不配被爱', '别给别人添麻烦', '自己扛'],
   hypocrisy: ['我是在骗所有人', '假装没事', '别表现出来', '习惯就好'],
   happiness: ['快乐是危险的', '我不该有这种感觉', '别人比我更苦', '别矫情'],
+  '怨': ['凭什么', '他们欠我的', '不公平', '被辜负', '被抛弃', '没人理解我'],
+  '惧': ['万一失败了', '我承受不起', '太危险了', '会失去一切', '来不及了', '别冒险'],
 };
 
 export const FALLBACK_DUST_TEXTS: string[] = [...DUST_TEXTS];

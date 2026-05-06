@@ -2,8 +2,10 @@ import { useGameStore } from '../../stores/useGameStore';
 import { useWillpowerStore } from '../../stores/useWillpowerStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useSceneStore } from '../../stores/useSceneStore';
+import { useTimeStore } from '../../stores/useTimeStore';
+import { useCognitionStore } from '../../stores/useCognitionStore';
 import type { Memory, DreamVision } from '../../types/skill';
-import { RECALL_COOLDOWN, DREAM_COOLDOWN } from '../../types/skill';
+import { RECALL_COOLDOWN, DREAM_COOLDOWN, VAGUS_NERVE_WILLPOWER_THRESHOLD } from '../../types/skill';
 import { DREAM_SYMBOLS } from '../../data/dreams/dreamSymbols';
 
 export function useRecallSkill() {
@@ -160,4 +162,55 @@ function calculateBeliefRate(connectionLevel: number): number {
   const baseRate = 0.15;
   const connectionBonus = (connectionLevel / 100) * 0.55;
   return Math.min(baseRate + connectionBonus, 0.70);
+}
+
+export function executeSweepDust(): { success: boolean; reason?: string } {
+  const playerStore = usePlayerStore.getState();
+  const timeStore = useTimeStore.getState();
+  const cognitionStore = useCognitionStore.getState();
+
+  const sweepDustState = playerStore.sweepDustSkill;
+  if (!sweepDustState) {
+    return { success: false, reason: '扫尘技能未解锁' };
+  }
+
+  if (sweepDustState.lastUsedDay === timeStore.day) {
+    return { success: false, reason: '今日已使用过扫尘' };
+  }
+
+  const unrelievedCognitions = cognitionStore.getUnrelievedCognitions();
+  if (unrelievedCognitions.length === 0) {
+    return { success: false, reason: '当前没有需要扫除的心尘' };
+  }
+
+  usePlayerStore.setState((state) => ({
+    sweepDustSkill: {
+      ...state.sweepDustSkill!,
+      lastUsedDay: timeStore.day,
+    },
+  }));
+
+  return { success: true };
+}
+
+export function executeVagusNerve(): { success: boolean; reason?: string; triggeredDeepNumbness?: boolean } {
+  const willpowerStore = useWillpowerStore.getState();
+  const playerStore = usePlayerStore.getState();
+
+  if (willpowerStore.current > VAGUS_NERVE_WILLPOWER_THRESHOLD) {
+    return { success: false, reason: '意志力未低至临界点' };
+  }
+
+  if (!playerStore.vagusNerveSkill?.available) {
+    return { success: false, reason: '迷走神经时刻不可用' };
+  }
+
+  const triggeredDeepNumbness = willpowerStore.consumeMaxByVagusNerve();
+
+  return { success: true, triggeredDeepNumbness };
+}
+
+export function checkVagusNerveAvailability(isDangerousChoice: boolean, isDustDriven: boolean): boolean {
+  const willpowerStore = useWillpowerStore.getState();
+  return isDangerousChoice && isDustDriven && willpowerStore.current <= VAGUS_NERVE_WILLPOWER_THRESHOLD;
 }

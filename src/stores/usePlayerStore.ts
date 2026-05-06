@@ -11,6 +11,8 @@ import {
   getConnectionTier,
   CONNECTION_TIER_COLORS,
   CONNECTION_TIER_DESCRIPTIONS,
+  CONNECTION_TIER_WEIGHTS,
+  CONNECTION_TIER_XINYIN_PROBABILITY,
 } from '../types/trust';
 import type { ConnectionTier } from '../types/trust';
 import { useCognitionStore } from './useCognitionStore';
@@ -46,6 +48,9 @@ interface PlayerActions {
   isHighConnection: () => boolean;
   getConnectionTierInfo: () => { tier: ConnectionTier; color: string; description: string; level: number };
   triggerEnlightenment: () => void;
+  triggerMicroEnlightenment: (importance: number) => void;
+  getConnectionWeight: () => number;
+  getXinYinProbability: () => number;
   setAtHome: (atHome: boolean) => void;
   updateHerdLevel: () => void;
   reset: () => void;
@@ -60,6 +65,10 @@ export const usePlayerStore = create<{
   hasEnlightenment: boolean;
   isAtHome: boolean;
   herdLevel: number;
+  microEnlightenmentCount: number;
+  lastTierChangeNarrative?: string;
+  sweepDustSkill: { lastUsedDay: number } | null;
+  vagusNerveSkill: { available: boolean } | null;
 } & PlayerActions>((set, get) => ({
   influences: [],
   xinYinLevel: 0,
@@ -69,6 +78,10 @@ export const usePlayerStore = create<{
   hasEnlightenment: false,
   isAtHome: true,
   herdLevel: 50,
+  microEnlightenmentCount: 0,
+  lastTierChangeNarrative: undefined,
+  sweepDustSkill: { lastUsedDay: -1 },
+  vagusNerveSkill: { available: true },
 
   addInfluence: (text: string, intensity?: Intensity, targetActionId?: string) => {
     const resolvedIntensity = intensity ?? 'normal';
@@ -163,10 +176,49 @@ export const usePlayerStore = create<{
   },
 
   triggerEnlightenment: () => {
-    set((state) => ({
+    set(() => ({
       hasEnlightenment: true,
-      xinYinLevel: Math.min(state.xinYinLevel + 30, 100),
     }));
+  },
+
+  triggerMicroEnlightenment: (importance: number) => {
+    const state = get();
+    const oldTier = getConnectionTier(state.trustLevel);
+    const connectionBoost = Math.floor(8 + importance * 7);
+    const newTrustLevel = Math.min(state.trustLevel + connectionBoost, 100);
+    const newTier = getConnectionTier(newTrustLevel);
+    const newCount = state.microEnlightenmentCount + 1;
+
+    let tierNarrative: string | undefined;
+    if (oldTier !== newTier) {
+      const tierNarratives: Record<string, string> = {
+        '疏远→倾听': '他开始认真听你说话了。',
+        '倾听→信任': '他不再只是听，他开始相信了。',
+        '信任→共生': '你们之间，已经不需要言语。',
+        '陌路→疏远': '他隐约感觉到了什么……',
+      };
+      const key = `${oldTier}→${newTier}`;
+      tierNarrative = tierNarratives[key];
+    }
+
+    set({
+      microEnlightenmentCount: newCount,
+      trustLevel: newTrustLevel,
+      xinYinLevel: Math.min(state.xinYinLevel + 5, 100),
+      lastTierChangeNarrative: tierNarrative,
+    });
+  },
+
+  getConnectionWeight: () => {
+    const level = get().trustLevel;
+    const tier = getConnectionTier(level);
+    return CONNECTION_TIER_WEIGHTS[tier];
+  },
+
+  getXinYinProbability: () => {
+    const level = get().trustLevel;
+    const tier = getConnectionTier(level);
+    return CONNECTION_TIER_XINYIN_PROBABILITY[tier];
   },
 
   setAtHome: (atHome: boolean) => {
@@ -206,6 +258,10 @@ export const usePlayerStore = create<{
       hasEnlightenment: false,
       isAtHome: true,
       herdLevel: 50,
+      microEnlightenmentCount: 0,
+      lastTierChangeNarrative: undefined,
+      sweepDustSkill: { lastUsedDay: -1 },
+      vagusNerveSkill: { available: true },
     });
   },
 }));

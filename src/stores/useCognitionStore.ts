@@ -11,9 +11,12 @@ interface CognitionActions {
   recordNegativeFeedback: (cognitionId: CognitionId) => void;
   transformCognition: (cognitionId: CognitionId) => void;
   unlockCognition: (cognitionId: CognitionId) => void;
+  relieveCognition: (cognitionId: CognitionId) => void;
   setEnlightenment: (cognitionId: string) => void;
   setAllDeepEnlightenment: () => void;
   getCognition: (cognitionId: CognitionId) => Cognition | undefined;
+  getUnrelievedCognitions: () => Cognition[];
+  getRelievedCognitions: () => Cognition[];
   reset: () => void;
 }
 
@@ -25,6 +28,9 @@ export const useCognitionStore = create<{
   unlockedCount: INITIAL_COGNITIONS.filter((c) => c.isUnlocked).length,
 
   recordPositiveFeedback: (cognitionId: CognitionId, actionId: string) => {
+    const cognition = get().cognitions.find((c) => c.id === cognitionId);
+    if (cognition?.isRelieved) return;
+
     const connectionLevel = usePlayerStore.getState().getConnectionLevel();
     const connectionBonus = (connectionLevel / 100) * 0.5;
     const transformChance = Math.min(COGNITION_TRANSFORM_BASE_RATE + connectionBonus, 1);
@@ -59,15 +65,15 @@ export const useCognitionStore = create<{
       }),
     }));
 
-    const cognition = get().cognitions.find((c) => c.id === cognitionId);
-    if (cognition?.isTransformed) {
+    const updatedCognition = get().cognitions.find((c) => c.id === cognitionId);
+    if (updatedCognition?.isTransformed) {
       if (connectionLevel >= 60) {
         useSceneStore.getState().addNarrativeLog(
           '你的声音被他听见了——他愿意相信你说的。'
         );
       }
       get().transformCognition(cognitionId);
-    } else if (cognition && cognition.progressCount >= 3 && !cognition.isTransformed) {
+    } else if (updatedCognition && updatedCognition.progressCount >= 3 && !updatedCognition.isTransformed) {
       if (connectionLevel < 30) {
         useSceneStore.getState().addNarrativeLog(
           '他似乎有所触动，但还不够信任你，无法接受这种改变。'
@@ -116,6 +122,20 @@ export const useCognitionStore = create<{
     });
   },
 
+  relieveCognition: (cognitionId: CognitionId) => {
+    set((state) => ({
+      cognitions: state.cognitions.map((c) => {
+        if (c.id !== cognitionId) return c;
+        return {
+          ...c,
+          isRelieved: true,
+          isTransformed: true,
+          currentContent: c.targetContent,
+        };
+      }),
+    }));
+  },
+
   setEnlightenment: (cognitionId: string) => {
     set((state) => ({
       cognitions: state.cognitions.map((c) => {
@@ -148,6 +168,16 @@ export const useCognitionStore = create<{
 
   getCognition: (cognitionId: CognitionId) => {
     return get().cognitions.find((c) => c.id === cognitionId);
+  },
+
+  getUnrelievedCognitions: () => {
+    return get().cognitions.filter(
+      (c) => c.isUnlocked && !c.isTransformed && !c.isRelieved
+    );
+  },
+
+  getRelievedCognitions: () => {
+    return get().cognitions.filter((c) => c.isRelieved);
   },
 
   reset: () => {
