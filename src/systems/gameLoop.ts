@@ -878,6 +878,8 @@ class GameLoopManager {
     biweeklyFamilyEvents.forEach((event) => {
       useNpcStore.getState().triggerEventAsDialog(event);
     });
+
+    useWorldEventStore.getState().generateMicroEvents();
   }
 
   private tickSkillCooldowns() {

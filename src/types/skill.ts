@@ -28,6 +28,11 @@ export type MemoryCategory =
   | 'beauty'
   | 'special';
 
+export interface MemoryVersion {
+  content: string;
+  innerVoice: string;
+}
+
 export interface Memory {
   id: string;
   type: 'good' | 'painful';
@@ -41,6 +46,10 @@ export interface Memory {
   keywords: string[];
   dustName?: string;
   isCore?: boolean;
+  resolution_state: 'unresolved' | 'resolved';
+  version_triggered_count: number;
+  unresolved_version?: MemoryVersion;
+  resolved_version?: MemoryVersion;
 }
 
 export const RECALL_COOLDOWN = 1;

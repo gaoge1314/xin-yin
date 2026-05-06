@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import type { WorldEvent, EventRecord, EventOutcome } from '../types/event';
+import type { WorldEvent, EventRecord, EventOutcome, MacroPhase } from '../types/event';
 import { WORLD_EVENTS } from '../data/events/worldEvents';
+import { MICRO_EVENT_POOL } from '../data/events/microEventPool';
 import { useTimeStore } from './useTimeStore';
 import { usePlayerStore } from './usePlayerStore';
 import { useSceneStore } from './useSceneStore';
@@ -18,15 +19,18 @@ interface WorldEventActions {
   observeEvent: (eventId: string) => void;
   getActiveEvent: () => WorldEvent | null;
   getEventHistory: () => EventRecord[];
+  generateMicroEvents: () => void;
   reset: () => void;
 }
 
 export const useWorldEventStore = create<{
   activeEventId: string | null;
   history: EventRecord[];
+  pendingMicroEvents: string[];
 } & WorldEventActions>((set, get) => ({
   activeEventId: null,
   history: [],
+  pendingMicroEvents: [],
 
   checkEvents: (): WorldEvent[] => {
     const triggered: WorldEvent[] = [];
@@ -64,7 +68,7 @@ export const useWorldEventStore = create<{
   },
 
   chooseOption: (eventId: string, choiceId: string) => {
-    const event = WORLD_EVENTS.find((e) => e.id === eventId);
+    const event = WORLD_EVENTS.find((e) => e.id === eventId) || MICRO_EVENT_POOL.find((e) => e.id === eventId);
     if (!event || !event.choices) return;
 
     const choice = event.choices.find((c) => c.id === choiceId);
@@ -118,10 +122,19 @@ export const useWorldEventStore = create<{
       activeEventId: null,
       history: [...state.history, record],
     }));
+
+    const pending = get().pendingMicroEvents;
+    if (pending.length > 0) {
+      const nextEventId = pending[0];
+      set((state) => ({
+        activeEventId: nextEventId,
+        pendingMicroEvents: state.pendingMicroEvents.slice(1),
+      }));
+    }
   },
 
   observeEvent: (eventId: string) => {
-    const event = WORLD_EVENTS.find((e) => e.id === eventId);
+    const event = WORLD_EVENTS.find((e) => e.id === eventId) || MICRO_EVENT_POOL.find((e) => e.id === eventId);
     if (!event) return;
 
     useSceneStore.getState().addNarrativeLog(
@@ -138,20 +151,153 @@ export const useWorldEventStore = create<{
       activeEventId: null,
       history: [...state.history, record],
     }));
+
+    const pending = get().pendingMicroEvents;
+    if (pending.length > 0) {
+      const nextEventId = pending[0];
+      set((state) => ({
+        activeEventId: nextEventId,
+        pendingMicroEvents: state.pendingMicroEvents.slice(1),
+      }));
+    }
   },
 
   getActiveEvent: (): WorldEvent | null => {
     const activeId = get().activeEventId;
     if (!activeId) return null;
-    return WORLD_EVENTS.find((e) => e.id === activeId) ?? null;
+    return (WORLD_EVENTS.find((e) => e.id === activeId) || MICRO_EVENT_POOL.find((e) => e.id === activeId)) ?? null;
   },
 
   getEventHistory: () => {
     return get().history;
   },
 
+  generateMicroEvents: () => {
+    const currentYear = useTimeStore.getState().currentYear;
+
+    let macroPhase: MacroPhase;
+    if (currentYear <= 2026) {
+      macroPhase = 'old_order';
+    } else if (currentYear <= 2029) {
+      macroPhase = 'cracking';
+    } else if (currentYear <= 2032) {
+      macroPhase = 'disintegration';
+    } else {
+      macroPhase = 'new_world';
+    }
+
+    const eligible = MICRO_EVENT_POOL.filter((event) => {
+      if (event.macroPhase !== macroPhase) return false;
+      if (event.isOneShot && get().history.some((r) => r.eventId === event.id)) return false;
+      return true;
+    });
+
+    if (eligible.length === 0) return;
+
+    const playerState = usePlayerStore.getState();
+    const willpowerState = useWillpowerStore.getState();
+
+    const weighted = eligible.map((event) => {
+      let weight = event.triggerCondition.chance ?? 1;
+
+      if (playerState.xinYinLevel > 50) {
+        if (event.category === 'personal' || event.source === 'inner') {
+          weight *= 1 + (playerState.xinYinLevel - 50) / 100;
+        }
+      }
+
+      if (playerState.herdLevel > 50) {
+        if (event.category === 'social' || event.source === 'society' || event.source === 'work') {
+          weight *= 1 + (playerState.herdLevel - 50) / 100;
+        }
+      }
+
+      if (willpowerState.current < 30 && event.importance === 'critical') {
+        weight *= 1.5;
+      }
+
+      return { event, weight: Math.max(weight, 0.01) };
+    });
+
+    const count = Math.floor(Math.random() * 3) + 1;
+    const selected: WorldEvent[] = [];
+    const available = [...weighted];
+
+    for (let i = 0; i < count && available.length > 0; i++) {
+      const totalWeight = available.reduce((sum, w) => sum + w.weight, 0);
+      let random = Math.random() * totalWeight;
+      let pickedIndex = 0;
+      for (let j = 0; j < available.length; j++) {
+        random -= available[j].weight;
+        if (random <= 0) {
+          pickedIndex = j;
+          break;
+        }
+      }
+      selected.push(available[pickedIndex].event);
+      available.splice(pickedIndex, 1);
+    }
+
+    for (const event of selected) {
+      useSceneStore.getState().addNarrativeLog(event.content);
+
+      for (const effect of event.effects) {
+        switch (effect.target) {
+          case 'willpower': {
+            if (effect.value < 0) {
+              useWillpowerStore.getState().consume(Math.abs(effect.value));
+            } else {
+              useWillpowerStore.getState().recover(effect.value);
+            }
+            break;
+          }
+          case 'organ': {
+            if (effect.key) {
+              useOrganStore.getState().updateOrgan({
+                organ: effect.key as keyof OrganHealth,
+                change: effect.value,
+                reason: event.id,
+              });
+            }
+            break;
+          }
+          case 'cognition': {
+            if (effect.key) {
+              const cogId = effect.key as CognitionId;
+              if (effect.value > 0) {
+                useCognitionStore.getState().recordPositiveFeedback(cogId, event.id);
+              } else {
+                useCognitionStore.getState().recordNegativeFeedback(cogId);
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      if (event.choices && event.choices.length > 0) {
+        if (!get().activeEventId) {
+          set({ activeEventId: event.id });
+        } else {
+          set((state) => ({
+            pendingMicroEvents: [...state.pendingMicroEvents, event.id],
+          }));
+        }
+      } else {
+        const record: EventRecord = {
+          eventId: event.id,
+          timestamp: Date.now(),
+          outcomeIndex: 0,
+        };
+        set((state) => ({
+          history: [...state.history, record],
+        }));
+      }
+    }
+  },
+
   reset: () => {
-    set({ activeEventId: null, history: [] });
+    set({ activeEventId: null, history: [], pendingMicroEvents: [] });
   },
 }));
 

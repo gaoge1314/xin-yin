@@ -16,8 +16,6 @@ import { useSocialRuleStore } from '../../stores/useSocialRuleStore';
 import { useAnchorStore } from '../../stores/useAnchorStore';
 import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
 import { RooftopScene } from './RooftopScene';
-import { FallingScene } from './FallingScene';
-import { UltimateChoice } from './UltimateChoice';
 import { CauseModeScene } from './CauseModeScene';
 import { GameOverScene } from './GameOverScene';
 import { AwakeningScene } from './AwakeningScene';
@@ -46,16 +44,7 @@ function resetAllStores() {
 export const SceneController: React.FC = () => {
   const phase = useSceneStore((s) => s.phase);
   const setPhase = useSceneStore((s) => s.setPhase);
-  const memories = useGameStore((s) => s.memories);
   const newGame = useGameStore((s) => s.newGame);
-
-  const handleStepOut = useCallback(() => {
-    setPhase('prologue-falling');
-  }, [setPhase]);
-
-  const handleFallComplete = useCallback(() => {
-    setPhase('prologue-choice');
-  }, [setPhase]);
 
   const handleLetGo = useCallback(() => {
     setPhase('prologue-cause');
@@ -86,21 +75,7 @@ export const SceneController: React.FC = () => {
   const renderScene = () => {
     switch (phase) {
       case 'prologue-rooftop':
-        return <RooftopScene onStepOut={handleStepOut} />;
-      case 'prologue-falling':
-        return (
-          <FallingScene
-            memories={memories}
-            onFallComplete={handleFallComplete}
-          />
-        );
-      case 'prologue-choice':
-        return (
-          <UltimateChoice
-            onLetGo={handleLetGo}
-            onHoldOn={handleHoldOn}
-          />
-        );
+        return <RooftopScene onHoldOn={handleHoldOn} onLetGo={handleLetGo} />;
       case 'prologue-cause':
         return (
           <CauseModeScene

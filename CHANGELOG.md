@@ -1,4 +1,83 @@
-﻿# 鏇存柊鏃ュ織
+﻿
+## [v5.0] - 2026-05-06
+
+### 新增功能
+
+#### U01 属性系统术语统一 + 连接度层级可视化
+- 连接度层级系统：5个层级（陌路/疏远/倾听/信任/共生），对应阈值 0-19/20-39/40-59/60-79/80-100
+- 每个层级有独特颜色和描述
+- UI 属性面板顺序调整为：[心印] [群则] [意志力] [连接度]
+
+#### U02 心印相合判定引擎（核心新模块）
+- AI 实时分析玩家输入与主角"知"的契合度
+- 4种判定等级：high/partial/conflict，对应费用倍率 0/1/1.3/2
+- 异步判定 + 3秒超时机制
+- 超时降级为关键词匹配
+- 连续3次超时暂停相合判定
+
+#### U03 微观事件宏观联动深化
+- 4个宏观阶段：旧秩序余晖/碎裂序幕/大解体/新世界分娩
+- 年份映射：2025-2026/2027-2029/2030-2032/2033-2035
+- 30个微观事件池，按阶段分类
+- 属性权重选择机制
+
+#### U04 记忆回溯双版本机制
+- 未解决版本 vs 已解决版本
+- 触发优先级逻辑：当季未触发 > 任意季未触发 > 当季已触发 > 已解决（温习微光）
+- 25个记忆剧本全部更新
+
+#### U05 序章30秒倒计时锁定
+- 天台场景重构：8段独白 + 系统提示 + 倒计时 + 文字输入
+- 最后10秒文字变红，最后3秒心跳声（Web Audio API）
+- 关键词分类：26个坚持关键词 / 11个放弃关键词
+- 单选锁定机制
+
+#### U06 悟道尘埃动态生成
+- 从认知标签动态生成尘埃文本
+- 9个认知标签映射尘埃变体
+- 回退机制保证至少5条尘埃
+
+#### U07 UI 属性面板更新
+- 连接度显示：数值 + 层级名称（带颜色）+ 进度条
+- 0.3秒淡入动画
+- 悬停显示层级描述
+
+### Bug 修复
+- 修复 TextInput.tsx 未使用的 CONNECTION_TIER_COLORS 导入
+- 修复 buildAlignmentInput.ts 未使用的 timeStore 变量
+- 修复 alignmentJudge.ts 和 fallbackAlignment.ts 类型比较错误
+
+### 文件变更
+
+#### 新增文件
+- `src/types/trust.ts` - ConnectionTier 类型、阈值、颜色、描述
+- `src/systems/alignment/alignmentTypes.ts` - 相合判定类型定义
+- `src/systems/alignment/buildAlignmentInput.ts` - 判定输入构建器
+- `src/systems/alignment/alignmentJudge.ts` - AI 判定逻辑
+- `src/systems/alignment/fallbackAlignment.ts` - 降级关键词匹配
+- `src/stores/useAlignmentStore.ts` - 相合判定状态管理
+- `src/data/events/microEventPool.ts` - 30个微观事件池
+- `src/systems/memory/memoryTrigger.ts` - 记忆触发优先级
+- `src/systems/memory/getMemoryContent.ts` - 记忆版本选择
+- `src/data/enlightenment/dustLabelMap.ts` - 认知标签到尘埃映射
+
+#### 修改文件
+- `src/stores/usePlayerStore.ts` - getConnectionTierInfo() 方法
+- `src/types/event.ts` - MacroPhase、MicroEventImportance 类型
+- `src/stores/useWorldEventStore.ts` - generateMicroEvents() 方法
+- `src/systems/gameLoop.ts` - 集成微观事件生成
+- `src/types/skill.ts` - Memory 扩展 resolution_state、unresolved_version、resolved_version
+- `src/data/memories/memoryScripts.ts` - 25个记忆双版本更新
+- `src/components/game/RooftopScene.tsx` - 30秒倒计时重构
+- `src/components/game/SceneController.tsx` - 天台场景路由
+- `src/stores/useEnlightenmentStore.ts` - 动态尘埃生成
+- `src/components/game/enlightenment/EnlightenmentSweeping.tsx` - 尘埃样式区分
+- `src/components/game/CoreGameLoop.tsx` - UI 属性面板更新
+- `src/components/game/TextInput.tsx` - 相合判定集成
+- `src/systems/dialogue/calculateConstraints.ts` - alignmentMultiplier 参数
+
+---
+﻿﻿﻿# 鏇存柊鏃ュ織
 
 ## [v4.8] - 2026-04-30
 
@@ -309,4 +388,5 @@
 ### 鏂板鍔熻兘
 - 瀹屾垚 23 涓洖蹇嗗墽鏈?- 鎵╁睍鎯呯华瑙﹀彂鍣ㄥ拰閿氱偣绯荤粺
 - 璋冭瘯妯″紡闈㈡澘
+
 

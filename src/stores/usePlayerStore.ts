@@ -8,7 +8,11 @@ import {
   TRUST_UTILITARIAN_PENALTY,
   TRUST_EMPATHY_BONUS,
   TRUST_RECOVERY_RATE,
+  getConnectionTier,
+  CONNECTION_TIER_COLORS,
+  CONNECTION_TIER_DESCRIPTIONS,
 } from '../types/trust';
+import type { ConnectionTier } from '../types/trust';
 import { useCognitionStore } from './useCognitionStore';
 import { useSocialRuleStore } from './useSocialRuleStore';
 import { usePersonalityStore } from './usePersonalityStore';
@@ -40,6 +44,7 @@ interface PlayerActions {
   getConnectionLevel: () => number;
   isColdResponse: () => boolean;
   isHighConnection: () => boolean;
+  getConnectionTierInfo: () => { tier: ConnectionTier; color: string; description: string; level: number };
   triggerEnlightenment: () => void;
   setAtHome: (atHome: boolean) => void;
   updateHerdLevel: () => void;
@@ -144,6 +149,17 @@ export const usePlayerStore = create<{
 
   isHighConnection: () => {
     return get().trustLevel >= CONNECTION_HIGH_THRESHOLD;
+  },
+
+  getConnectionTierInfo: () => {
+    const level = get().trustLevel;
+    const tier = getConnectionTier(level);
+    return {
+      tier,
+      color: CONNECTION_TIER_COLORS[tier],
+      description: CONNECTION_TIER_DESCRIPTIONS[tier],
+      level,
+    };
   },
 
   triggerEnlightenment: () => {

@@ -1,3 +1,7 @@
+export type MacroPhase = 'old_order' | 'cracking' | 'disintegration' | 'new_world';
+
+export type MicroEventImportance = 'routine' | 'significant' | 'critical';
+
 export interface WorldEvent {
   id: string;
   type: 'macro' | 'micro';
@@ -10,6 +14,8 @@ export interface WorldEvent {
   source?: EventSource;
   taskType?: EventTaskType;
   transmissionChain?: string;
+  macroPhase?: MacroPhase;
+  importance?: MicroEventImportance;
 }
 
 export type EventSource = 'school' | 'work' | 'family' | 'social' | 'society' | 'inner';

@@ -1,7 +1,7 @@
 import type { DialogueInput, DialogueConstraints, EnergyLevel, DefensePosture, ResponseLength, ComplianceWillingness } from '../../types/dialogue';
 import type { TriggerType } from '../../types/playerTrigger';
 
-export function calculateDialogueConstraints(input: DialogueInput, triggerType?: TriggerType): DialogueConstraints {
+export function calculateDialogueConstraints(input: DialogueInput, triggerType?: TriggerType, alignmentMultiplier?: number): DialogueConstraints {
   const {
     currentWillpower: willpower,
     currentImprint: imprintLevel,
@@ -117,6 +117,12 @@ export function calculateDialogueConstraints(input: DialogueInput, triggerType?:
     if (triggeredTag !== null && tagTriggerIntensity > 5) deviation += 3;
     willpowerCostMultiplier = 0.5 + (deviation / 10);
     willpowerCostMultiplier = Math.max(0.5, Math.min(2.0, willpowerCostMultiplier));
+  }
+
+  if (alignmentMultiplier === 0) {
+    willpowerCostMultiplier = 0;
+  } else if (alignmentMultiplier !== undefined && alignmentMultiplier > 1) {
+    willpowerCostMultiplier = willpowerCostMultiplier * alignmentMultiplier;
   }
 
   return {

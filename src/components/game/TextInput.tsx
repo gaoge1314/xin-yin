@@ -5,7 +5,10 @@ import { useTimeStore } from '../../stores/useTimeStore';
 import { useSceneStore } from '../../stores/useSceneStore';
 import { useEnlightenmentStore } from '../../stores/useEnlightenmentStore';
 import { useTriggerStore } from '../../stores/useTriggerStore';
-import { TRUST_LOW_THRESHOLD } from '../../types/trust';
+import { useAlignmentStore } from '../../stores/useAlignmentStore';
+import { buildAlignmentInput } from '../../systems/alignment/buildAlignmentInput';
+import { TRUST_LOW_THRESHOLD, getConnectionTier } from '../../types/trust';
+import type { ConnectionTier } from '../../types/trust';
 import { calculateDialogueConstraints } from '../../systems/dialogue/calculateConstraints';
 import { generateProtagonistResponse, inferEmotionalState } from '../../systems/dialogue/generateResponse';
 import { buildDialogueInputForPlayer } from '../../systems/dialogue/buildDialogueInput';
@@ -58,12 +61,21 @@ const DORMANT_STATUS_MAP: Record<string, string> = {
   T07: '夜晚将至',
 };
 
+const TIER_BORDER_HEX: Record<ConnectionTier, string> = {
+  '陌路': 'rgba(156, 163, 175, 0.3)',
+  '疏远': 'rgba(147, 197, 253, 0.3)',
+  '倾听': 'rgba(250, 204, 21, 0.3)',
+  '信任': 'rgba(251, 146, 60, 0.3)',
+  '共生': 'rgba(253, 230, 138, 0.3)',
+};
+
 export const TextInput: React.FC = () => {
   const [text, setText] = useState('');
   const [showIntensity, setShowIntensity] = useState(false);
   const [canResonate, setCanResonate] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [hoverDormant, setHoverDormant] = useState(false);
+  const [isJudging, setIsJudging] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const addInfluence = usePlayerStore((s) => s.addInfluence);
@@ -78,6 +90,7 @@ export const TextInput: React.FC = () => {
   const trustLevel = usePlayerStore((s) => s.trustLevel);
   const hasEnlightenment = usePlayerStore((s) => s.hasEnlightenment);
   const isLowTrust = trustLevel < TRUST_LOW_THRESHOLD;
+  const currentTier = getConnectionTier(trustLevel);
 
   const inputBoxState = useTriggerStore((s) => s.inputBoxState);
   const activeTrigger = useTriggerStore((s) => s.activeTrigger);
@@ -106,23 +119,48 @@ export const TextInput: React.FC = () => {
     setShowIntensity(true);
   }, [text, checkResonance, setPhase]);
 
-  const handleSelectIntensity = useCallback((intensity: Intensity) => {
+  const handleSelectIntensity = useCallback(async (intensity: Intensity) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const costPercent = getWillpowerPercent(intensity);
-    const cost = Math.ceil(willpowerCurrent * costPercent);
+    setShowIntensity(false);
+    setIsJudging(true);
+
+    const alignmentInput = buildAlignmentInput(trimmed);
+    const alignmentResult = await useAlignmentStore.getState().judgeAlignment(alignmentInput);
+    const costMultiplier = useAlignmentStore.getState().getCostMultiplier();
+
+    let finalIntensity = intensity;
+    let adjustedCostMultiplier = costMultiplier;
+
+    if (alignmentResult.alignment_judgment === 'high') {
+      finalIntensity = 'resonance';
+      adjustedCostMultiplier = 0;
+    }
+
+    const costPercent = getWillpowerPercent(finalIntensity);
+    let cost = Math.ceil(willpowerCurrent * costPercent);
+
+    if (adjustedCostMultiplier === 0) {
+      cost = 0;
+    } else if (adjustedCostMultiplier > 1) {
+      cost = Math.ceil(cost * adjustedCostMultiplier);
+    }
 
     if (cost > 0) {
       consumeWillpower(cost);
     }
 
-    if (intensity === 'earnest') {
+    if (finalIntensity === 'earnest') {
       interruptRecovery();
     }
 
-    addInfluence(trimmed, intensity);
-    addNarrativeLog(INTENSITY_NARRATIVE[intensity]);
+    addInfluence(trimmed, finalIntensity);
+    addNarrativeLog(INTENSITY_NARRATIVE[finalIntensity]);
+
+    if (alignmentResult.protagonist_perceived_feeling) {
+      addNarrativeLog(alignmentResult.protagonist_perceived_feeling);
+    }
 
     const dialogueInput = buildDialogueInputForPlayer(trimmed);
     const constraints = calculateDialogueConstraints(dialogueInput, dialogueInput.triggerType);
@@ -157,7 +195,7 @@ export const TextInput: React.FC = () => {
     });
 
     setText('');
-    setShowIntensity(false);
+    setIsJudging(false);
     setCanResonate(false);
     setInputFocused(false);
     setIsFocused(false);
@@ -272,11 +310,14 @@ export const TextInput: React.FC = () => {
             className={`
               w-full bg-white/[0.03] border rounded px-3 py-2
               text-white/70 text-sm placeholder:text-white/20
-              focus:outline-none focus:border-calm/30
+              focus:outline-none
               resize-none
               transition-all duration-300
-              ${isUrgent ? 'border-amber-500/30 focus:border-amber-500/50' : 'border-white/10'}
+              ${isUrgent ? 'focus:border-amber-500/50' : 'focus:border-calm/30'}
             `}
+            style={{
+              borderColor: isUrgent ? undefined : TIER_BORDER_HEX[currentTier],
+            }}
             rows={1}
           />
         </div>
@@ -302,7 +343,18 @@ export const TextInput: React.FC = () => {
         </div>
       )}
 
-      {showIntensity && (
+      {isJudging && (
+        <div className="mt-2 flex items-center gap-2 animate-[fadeIn_0.3s_ease-out]">
+          <div className="flex gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-calm/60 animate-[bounce_1s_ease-in-out_infinite]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-calm/60 animate-[bounce_1s_ease-in-out_0.2s_infinite]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-calm/60 animate-[bounce_1s_ease-in-out_0.4s_infinite]" />
+          </div>
+          <span className="text-calm/50 text-sm tracking-widest">倾听中…</span>
+        </div>
+      )}
+
+      {showIntensity && !isJudging && (
         <div className="mt-2 flex flex-wrap gap-2 items-center animate-[fadeIn_0.3s_ease-out]">
           {intensityOptions.map((intensity) => {
             const cost = Math.ceil(willpowerCurrent * getWillpowerPercent(intensity));
@@ -340,7 +392,7 @@ export const TextInput: React.FC = () => {
         </div>
       )}
 
-      {!showIntensity && (
+      {!showIntensity && !isJudging && (
         <div className="mt-2 flex gap-3 items-center">
           {isUrgent && (
             <button

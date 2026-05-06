@@ -49,7 +49,7 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
           ${isOpen ? 'w-72 opacity-100' : 'w-0 opacity-0'}
         `}
       >
-        <div className="w-72 p-4 overflow-y-auto h-full">
+        <div className="w-72 p-4 overflow-y-auto h-full bg-white/[0.02]">
           {children}
         </div>
       </div>

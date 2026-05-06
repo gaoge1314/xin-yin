@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { DUST_TEXTS } from '../data/enlightenment/dustTexts';
+import { DUST_LABEL_MAP, FALLBACK_DUST_TEXTS } from '../data/enlightenment/dustLabelMap';
 import { INNER_MONOLOGUES } from '../data/enlightenment/innerMonologues';
+import { useCognitionStore } from './useCognitionStore';
 import { useWillpowerStore } from './useWillpowerStore';
 import { useGameStore } from './useGameStore';
 import { useTimeStore } from './useTimeStore';
@@ -15,6 +16,8 @@ interface DustParticle {
   y: number;
   opacity: number;
   isFading: boolean;
+  sourceLabelId?: string;
+  isFallback?: boolean;
 }
 
 interface EnlightenmentState {
@@ -61,9 +64,27 @@ function getRandomPosition(): { x: number; y: number } {
   };
 }
 
-function getRandomText(existingTexts: string[]): string {
-  const available = DUST_TEXTS.filter((t) => !existingTexts.includes(t));
-  const pool = available.length > 0 ? available : DUST_TEXTS;
+function getEdgePosition(): { x: number; y: number } {
+  const edge = Math.floor(Math.random() * 4);
+  switch (edge) {
+    case 0: return { x: Math.random() * 80 + 10, y: Math.random() * 10 + 2 };
+    case 1: return { x: Math.random() * 80 + 10, y: Math.random() * 10 + 88 };
+    case 2: return { x: Math.random() * 10 + 2, y: Math.random() * 80 + 10 };
+    default: return { x: Math.random() * 10 + 88, y: Math.random() * 80 + 10 };
+  }
+}
+
+function getDustTextForLabel(labelId: string, existingTexts: string[]): string {
+  const variants = DUST_LABEL_MAP[labelId];
+  if (!variants) return FALLBACK_DUST_TEXTS[Math.floor(Math.random() * FALLBACK_DUST_TEXTS.length)];
+  const available = variants.filter((t) => !existingTexts.includes(t));
+  const pool = available.length > 0 ? available : variants;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function getFallbackText(existingTexts: string[]): string {
+  const available = FALLBACK_DUST_TEXTS.filter((t) => !existingTexts.includes(t));
+  const pool = available.length > 0 ? available : FALLBACK_DUST_TEXTS;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -75,16 +96,35 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
       const connectionLevel = usePlayerStore.getState().getConnectionLevel();
       const isPartial = connectionLevel < 30;
 
+      const activeLabels = useCognitionStore.getState().cognitions.filter(
+        (c) => c.isUnlocked && !c.isTransformed
+      );
+
+      const labelIds = activeLabels.map((c) => c.id);
+      const needsFallback = labelIds.length < 5;
+
       const particleCount = isPartial
         ? Math.floor(Math.random() * 2) + 4
-        : Math.floor(Math.random() * 3) + 8;
+        : Math.floor(Math.random() * 4) + 5;
 
       const particles: DustParticle[] = [];
       const usedTexts: string[] = [];
 
       for (let i = 0; i < particleCount; i++) {
         const pos = getRandomPosition();
-        const text = getRandomText(usedTexts);
+        let text: string;
+        let sourceLabelId: string | undefined;
+        let isFallback: boolean | undefined;
+
+        if (labelIds.length > 0) {
+          const labelId = labelIds[i % labelIds.length];
+          text = getDustTextForLabel(labelId, usedTexts);
+          sourceLabelId = labelId;
+          isFallback = false;
+        } else {
+          text = getFallbackText(usedTexts);
+          isFallback = true;
+        }
         usedTexts.push(text);
         particles.push({
           id: nextDustId++,
@@ -93,7 +133,27 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
           y: pos.y,
           opacity: 1,
           isFading: false,
+          sourceLabelId,
+          isFallback,
         });
+      }
+
+      if (needsFallback) {
+        const fallbackCount = 5 - labelIds.length;
+        for (let i = 0; i < fallbackCount; i++) {
+          const pos = getRandomPosition();
+          const text = getFallbackText(usedTexts);
+          usedTexts.push(text);
+          particles.push({
+            id: nextDustId++,
+            text,
+            x: pos.x,
+            y: pos.y,
+            opacity: 1,
+            isFading: false,
+            isFallback: true,
+          });
+        }
       }
 
       if (isPartial) {
@@ -141,12 +201,35 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
         currentMonologue: newMonologue,
       });
 
+      const delay = 1000 + Math.random() * 1000;
       setTimeout(() => {
         const currentState = get();
         const remaining = currentState.dustParticles.filter((d) => d.id !== dustId);
         const existingTexts = remaining.map((d) => d.text);
-        const pos = getRandomPosition();
-        const text = getRandomText(existingTexts);
+        const pos = getEdgePosition();
+        let text: string;
+        let sourceLabelId: string | undefined = dust.sourceLabelId;
+        let isFallback: boolean | undefined = dust.isFallback;
+
+        if (sourceLabelId && DUST_LABEL_MAP[sourceLabelId]) {
+          text = getDustTextForLabel(sourceLabelId, existingTexts);
+        } else if (sourceLabelId) {
+          const allLabelIds = useCognitionStore.getState().cognitions
+            .filter((c) => c.isUnlocked && !c.isTransformed)
+            .map((c) => c.id);
+          if (allLabelIds.length > 0) {
+            const nextLabelId = allLabelIds[Math.floor(Math.random() * allLabelIds.length)];
+            text = getDustTextForLabel(nextLabelId, existingTexts);
+            sourceLabelId = nextLabelId;
+            isFallback = false;
+          } else {
+            text = getFallbackText(existingTexts);
+            isFallback = true;
+          }
+        } else {
+          text = getFallbackText(existingTexts);
+          isFallback = true;
+        }
 
         set({
           dustParticles: [
@@ -156,19 +239,49 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
               text,
               x: pos.x,
               y: pos.y,
-              opacity: 1,
+              opacity: 0,
               isFading: false,
+              sourceLabelId,
+              isFallback,
             },
           ],
         });
-      }, 500);
+
+        requestAnimationFrame(() => {
+          set((s) => ({
+            dustParticles: s.dustParticles.map((d) =>
+              d.id === nextDustId - 1 && d.opacity === 0
+                ? { ...d, opacity: 1 }
+                : d
+            ),
+          }));
+        });
+      }, delay);
     },
 
     spawnDust: () => {
       const state = get();
       const existingTexts = state.dustParticles.map((d) => d.text);
-      const pos = getRandomPosition();
-      const text = getRandomText(existingTexts);
+      const pos = getEdgePosition();
+
+      const activeLabels = useCognitionStore.getState().cognitions.filter(
+        (c) => c.isUnlocked && !c.isTransformed
+      );
+      const labelIds = activeLabels.map((c) => c.id);
+
+      let text: string;
+      let sourceLabelId: string | undefined;
+      let isFallback: boolean | undefined;
+
+      if (labelIds.length > 0) {
+        const labelId = labelIds[Math.floor(Math.random() * labelIds.length)];
+        text = getDustTextForLabel(labelId, existingTexts);
+        sourceLabelId = labelId;
+        isFallback = false;
+      } else {
+        text = getFallbackText(existingTexts);
+        isFallback = true;
+      }
 
       set({
         dustParticles: [
@@ -178,10 +291,22 @@ export const useEnlightenmentStore = create<EnlightenmentState & EnlightenmentAc
             text,
             x: pos.x,
             y: pos.y,
-            opacity: 1,
+            opacity: 0,
             isFading: false,
+            sourceLabelId,
+            isFallback,
           },
         ],
+      });
+
+      requestAnimationFrame(() => {
+        set((s) => ({
+          dustParticles: s.dustParticles.map((d) =>
+            d.id === nextDustId - 1 && d.opacity === 0
+              ? { ...d, opacity: 1 }
+              : d
+          ),
+        }));
       });
     },
 

@@ -14,6 +14,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     keywords: ['珍贵', '失去', '生命', '意义', '撕掉', '纸条'],
     dustName: '我必须被人看得起',
     isCore: true,
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '小学教室里，老师让全班在纸上写下生命中最珍贵的10样东西。他思来想去也没想到几个真正珍贵的，剩下的胡编乱造凑了10个纸条。老师说：命运多舛，你失去了最珍贵的一个。他随手划掉一个不重要的。接着又划，又划。终于剩下三五个他认为不能划的时候，老师继续要求撕掉。他慌了。最后只剩两张纸条，其中一张写的是"生命"。老师让他再撕掉一张。他终于受不了了。',
+      innerVoice: '如果我生命中一切有意义的事情都基于我的生命而存在，那么只要活着就有意义吗？可如果对我生命有意义的事情都没有了，我还要这生命干什么？这个问题，他至今没有答案。',
+    },
+    resolved_version: {
+      content: '那时我以为撕掉纸条就是失去，现在看，那些纸条从来不是生命本身。它们只是我对生命的想象——而想象是可以重写的。真正的珍贵不在纸上，在我每一次选择不放弃的时刻里。',
+      innerVoice: '纸条上的字可以划掉，但写下那些字的手还在。我不再问活着有没有意义，因为意义不是找到的，是活出来的。',
+    },
   },
   {
     id: 'memory_father_back',
@@ -27,6 +37,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['父亲', '失望', '沉默', '背影', '考研', '失败'],
     dustName: '我必须被人看得起',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '考研放榜的夜晚，他打开网页，看到了分数。第三次了。他等着父亲的责骂，准备好了接受一切。但父亲一句话没说，只是转身去了阳台。那个沉默的背影，比任何责骂都沉重。他站在客厅里，不知道该跟过去还是该待在原地。窗外的夜色很深，阳台上只有父亲一个模糊的轮廓。',
+      innerVoice: '他是不是对我彻底失望了？连骂都不愿意骂了？那个沉默的背影比任何责骂都沉重。',
+    },
+    resolved_version: {
+      content: '那时我以为父亲的沉默是失望，现在看，那也许是他不知道该怎么面对我。他不是不想骂，是怕骂了之后我更扛不住。那个背影不是背弃，是一个笨拙的父亲在用沉默保护我。',
+      innerVoice: '他转身去阳台，不是放弃我，是放弃了他自己的表达方式。有些爱不会说话，但一直在那里。',
+    },
   },
   {
     id: 'memory_classmate_comparison',
@@ -40,6 +60,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['比较', '差距', '别人', '不如', '原地', '沉默'],
     dustName: '我必须被人看得起',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他无意中得知一位老同学的近况——进了大厂、年薪可观。他不是嫉妒，是一种更复杂的感觉：为什么别人都在往前走，只有自己困在原地？他打开聊天框，打了几个字，又删掉了。反复几次，最终什么都没说。屏幕上的光映在他脸上，聊天框空空如也。',
+      innerVoice: '同出穷乡僻壤，一个大展宏图，一个畏畏缩缩。',
+    },
+    resolved_version: {
+      content: '那时我以为别人的成功是我的失败，现在看，人生不是同一条跑道。他进了大厂，我走进了内心。我们走的是不同的路，没有谁比谁更值得。我不再用别人的尺子量自己的人生。',
+      innerVoice: '同出穷乡僻壤，各自走了不同的路。他的路不是我的路，我的路也不需要他的终点来证明。',
+    },
   },
   {
     id: 'memory_guard_meaning',
@@ -52,6 +82,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     age: 23,
     isHealed: false,
     keywords: ['站岗', '意义', '想通', '自己', '找到', '确保'],
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他被派去站岗，看守一个有阳性病例的小区。无聊、枯燥、觉得自己像个摆设。日复一日地站在那里，看着车辆进出，拦截道路上的车让小区的车先走。二十来天了，什么也没发生。但某一刻他突然想通了——他站在这里，不是为了等有人跑出来，是为了确保那种可能性永远不会发生。',
+      innerVoice: '我为什么要站岗呢？我不能确保肯定没有人跑出来——我自己找到了意义。',
+    },
+    resolved_version: {
+      content: '那时我在站岗中找到了意义，现在看，那个领悟其实一直都在。意义不是别人给的，也不是等来的，是我在看似无用的坚持中自己创造的。站岗如此，活着也是如此。',
+      innerVoice: '我站岗时想通的事，其实是我一生的缩影——意义不在结果里，在我选择站着的每一刻。',
+    },
   },
   {
     id: 'memory_self_deception',
@@ -66,6 +106,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     keywords: ['喜欢', '自作多情', '欺骗', '怯懦', '幻想', '一厢情愿'],
     dustName: '没人真正爱我/我不配被爱',
     isCore: true,
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他陷入了一段自我欺骗的感情。他明明没有那么喜欢她，可每次遇到她，身体的反应又让他以为自己在喜欢——心跳加速、不由自主地分泌各种激素，这种感觉让他误以为那就是爱。他把自己也骗了。最终发现一切都只是自己的幻想，闹出了一场闹剧。',
+      innerVoice: '怯懦让我不敢向女生们说话。我越不向她们说话，她们越不会理解我。终于我自作多情的以为时机成熟之后才发现，只是我的一厢情愿。',
+    },
+    resolved_version: {
+      content: '那时我以为心跳就是喜欢，现在看，那只是孤独在寻找一个投射的对象。我不是喜欢她，我是渴望被看见。自作多情不是罪，是太想被爱的人才编的梦。醒来不丢人，不敢醒才可怕。',
+      innerVoice: '我骗的不是她，是我自己。但那个骗自己的我，也只是太孤独了。承认孤独，比假装喜欢更勇敢。',
+    },
   },
   {
     id: 'memory_crescent_farewell',
@@ -79,6 +129,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['新月', '告别', '精神', '感染', '陪伴', '分别'],
     isCore: true,
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '新月是一个用功、自律、能察觉他情绪的女生。她的存在让他变得更好——他希望能够在她面前表现出自己最好的样子。考研结束就是告别。他送她离开，知道大概率不会再相见。她学习时全神贯注，放松时大大方方。她的精神感染了他，让他可以继续学习，而不至于完全摆烂。',
+      innerVoice: '你是一个勇敢、自信、强大的人。这就是我对你最直接的感受。我们应该是不会再相见了，但我就是不知足。',
+    },
+    resolved_version: {
+      content: '那时我以为告别是失去，现在看，新月留给我的不是遗憾，是一种活法。她让我看见人可以怎样活着——专注、坦然、不卑不亢。她走了，但那种活法留了下来。',
+      innerVoice: '告别不是结束，是她活过的证明在我身上延续。我不再不知足，因为我已经拥有了最重要的东西——她让我相信人可以更好。',
+    },
   },
   {
     id: 'memory_lost_empathy',
@@ -92,6 +152,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['共情', '游戏', '冷漠', '戾气', '负能量', '失去'],
     dustName: '没人真正爱我/我不配被爱',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他回忆起自己曾经是会为分别而难过的。小学毕业差点哭出来，初中毕业对同学老师依依不舍。但高中时沉迷游戏，慢慢对周围的人和事不再关心。那种戾气由内而外散发，浑身负能量。他看着当时的自己，感到丑陋。',
+      innerVoice: '那种戾气由内而外散发，浑身负能量。我看着当时的自己，感到丑陋。',
+    },
+    resolved_version: {
+      content: '那时我以为共情是丢了就找不回来的东西，现在看，它只是被埋起来了。游戏是逃避，戾气是保护色，但那个会为分别难过的小孩一直都在。他没死，只是在等我觉得安全了再出来。',
+      innerVoice: '我失去的不是共情，是面对真实的勇气。现在我能看见那个丑陋的自己，说明共情已经回来了。',
+    },
   },
   {
     id: 'memory_dream_wangyifan',
@@ -105,6 +175,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['梦', '王一凡', '幻想', '自我欺骗', '感动自己', '遗忘'],
     dustName: '没人真正爱我/我不配被爱',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他梦到小学同学王一凡。在泳池里，他无比确认那就是她，刚想与她相认，却犹豫了。他问她：你是王一凡吗？她说嗯。请问你是？他愣住了。我们很熟吗？所有一切种种好像都是他自己的幻想。醒来后他意识到：从未了解过她，一直都是在感动自己。',
+      innerVoice: '我们很熟吗？所有一切种种好像都是我自己的幻想。从未了解过她，一直都是在感动自己。明明从始至终都只是我一个人的自我欺骗。',
+    },
+    resolved_version: {
+      content: '那时我以为感动自己是一种耻辱，现在看，那是我对温暖的渴望在找不到出口时自己造的光。我确实不了解她，但我了解那个渴望被了解的自己。那不是欺骗，是求生。',
+      innerVoice: '感动自己不是罪，是我太需要温暖了。承认这一点，比假装坚强更接近真实。',
+    },
   },
   {
     id: 'memory_inspection_punishment',
@@ -119,6 +199,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     keywords: ['督导', '扣分', '检讨', '不公平', '压迫', '狗'],
     dustName: '都是你们害的',
     isCore: true,
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他一个人干了十个人的活。室友在玩游戏、睡觉，而他一个人在办公室工作到深夜。因为太困了，写错了一个字，被督导抓到。扣分、写检讨。他每天一个人从教室灰溜溜地跑回宿舍，轻轻爬到床上，听着室友的鼾声如雷和脚臭。他实在不甘心，这一天究竟是在为谁而活？',
+      innerVoice: '我一个人干了你们所有人的活，让你们有空来查我的工作。你们不把我当人看，但我曾经也是人。',
+    },
+    resolved_version: {
+      content: '后来我明白，那个督导或许从未想过羞辱我。他只是在自己的规则里活着——就像我曾经在自己的执念里活着一样。不公平是真实的，但用别人的错误惩罚自己，是我自己的选择。',
+      innerVoice: '他站在那里，念出那个扣分数字的时候，我觉得自己整个人被剥光了。但现在我知道，那件被剥掉的衣服，本来就不是我。',
+    },
   },
   {
     id: 'memory_authority_suppress',
@@ -132,6 +222,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['政委', '打压', '检讨', '息事宁人', '反抗', '滚'],
     dustName: '都是你们害的',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他因为想实习去找政委反映情况，却被告知"就你一个人反映问题，你直接滚吧"。他事后回想自己写的那封检讨式的自我检讨——"我意识到了我的错误"。他意识到那不是检讨，是自我阉割。国家机关想的不是解决问题，而是息事宁人。',
+      innerVoice: '那不是检讨，是自我阉割。国家机关想的不是解决问题，而是息事宁人。就你一个人反映问题，你直接滚吧。',
+    },
+    resolved_version: {
+      content: '那时我以为写检讨就是认输，现在看，那封检讨确实不是认输——它是我为了生存做的妥协。但妥协不等于认同。我保留了内心的判断，那才是真正的我没有被阉割的部分。',
+      innerVoice: '他说让我滚，我确实滚了。但我心里那句话没滚——对就是对，错就是错。他可以压我的声音，压不了我的判断。',
+    },
   },
   {
     id: 'memory_moving_luggage',
@@ -145,6 +245,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['搬行李', '承诺', '心甘情愿', '抱怨', '消耗', '等待'],
     dustName: '都是你们害的',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '学校让学生帮忙搬行李，一开始说是自愿帮忙，大家心甘情愿，十分努力，确实很累。后来学校突然说要发钱，然后等了两三个月没下文。大家从心甘情愿变成了抱怨学校。承诺变成了枷锁，善意被消磨殆尽。',
+      innerVoice: '学校没做错什么，但可以做得更好。人心就是这样被消耗掉的。',
+    },
+    resolved_version: {
+      content: '那时我以为善意被辜负就不该再给，现在看，善意本身没有错，错的是把它和回报绑在一起。我搬行李时的那份心甘情愿是真实的，不因后来的失望而贬值。',
+      innerVoice: '学校消耗了我的期待，但没消耗我的善意。我学会了：下次给善意的时候，不要附加条件——对别人，也对自己。',
+    },
   },
   {
     id: 'memory_overtime_nationalism',
@@ -158,6 +268,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['加班', '加班费', '国家大义', '剥削', '强迫', '利益'],
     dustName: '都是你们害的',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '有人用"国家利益"要求加班，甚至不给加班费。他在心里冷笑：你出多少钱我出多少力，下班我就走人，这有什么可指责的？而且这里只有金钱交易，你扯什么国家大义。损害国家利益的还不知道是谁呢。',
+      innerVoice: '你出多少钱我出多少力，下班我就走人。你扯什么国家大义？损害国家利益的还不知道是谁呢？',
+    },
+    resolved_version: {
+      content: '那时我以为反抗剥削就是冷笑和走人，现在看，我的冷笑里藏着更深的失望——我期待公平，却只得到了口号。但我不需要用愤怒来证明自己清醒，清醒本身就是力量。',
+      innerVoice: '我不加班不是因为不爱国，是因为真正的国家利益不需要用谎言来维护。我的清醒，就是我对公平最大的坚持。',
+    },
   },
   {
     id: 'memory_high_school_lost',
@@ -172,6 +292,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     keywords: ['迷失', '数学', '挫折', '意义', '学习', '松懈'],
     dustName: '我不能失败',
     isCore: true,
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他曾经热爱数学，享受解出难题后的筋疲力尽，那种思维得到锻炼的感觉像打了一场大胜仗。他甚至很希望遇到难题，然后将它们一个个解决，感觉很爽很快乐。但到了高中，难题解不了，简单题老出错。他突然找不到学习的意义，一直感觉自己在做一件没有用的事情。',
+      innerVoice: '整个高中也没想明白，也许这就是一遇挫折便松懈怠慢。',
+    },
+    resolved_version: {
+      content: '那时我以为解不出题就是失败，现在看，那只是我遇到了超出当时能力的挑战。热爱不会因为一次挫折消失，它只是被恐惧暂时遮住了。我后来还是找到了学习的意义——不是在分数里，是在理解世界的过程里。',
+      innerVoice: '我不是松懈了，是被"必须成功"的念头压垮了。放下那个念头之后，数学的快乐其实一直都在等我。',
+    },
   },
   {
     id: 'memory_exam_machine',
@@ -185,6 +315,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['考研', '麻木', '机器', '刷题', '嘲讽', '枯燥'],
     dustName: '我不能失败',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '二战时的状态——谈不上痛苦，就是麻木。盲目刷题，盲目做一些事，结果成绩反而提升了。他把每一章的经典例题背会，每道做10遍。什么考研不过是个体力活罢了。看着成绩他笑了，是自我嘲讽的笑。',
+      innerVoice: '没想到你白明泽也有一天走上了这条路，做自己曾经最不屑于干的事。我不过是把别人嚼过的馒头又嚼了十几遍罢了。',
+    },
+    resolved_version: {
+      content: '那时我以为做机器是堕落，现在看，那台机器也在替我扛着——扛着恐惧，扛着压力，扛着不能倒下的执念。我嘲讽的不是自己，是那个逼我变成机器的系统。但我活下来了，这本身就是答案。',
+      innerVoice: '嚼过的馒头也是馒头，机器也是我在当机器。我不必为生存方式感到羞耻，但我可以选择不再只是生存。',
+    },
   },
   {
     id: 'memory_underwater_cat',
@@ -198,6 +338,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['猫', '困住', '出口', '网', '救', '挣扎'],
     dustName: '我不能失败',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他在水下看到一只被困的猫。猫拼命咬网，但找不到出口。出口明明就在下面——网的最下面只有粗格没有细网，可猫不往下看，只在上面抓挠。他想起家里的蜜蜂，打开门让它出去，它却在玻璃上乱撞。他想救猫又不敢靠近，怕吓跑它反而活不了。最后猫不动了。',
+      innerVoice: '活路就在眼前，可我就不去。救猫就是救自己，唯一的活路就是我想救猫。',
+    },
+    resolved_version: {
+      content: '那时我以为猫困在网里，现在看，我也困在自己的网里——一直往上抓挠，不肯往下看。出口一直在那里，只是我太害怕低头。承认自己需要被救，才是真正的活路。',
+      innerVoice: '猫不往下看，我也不往下看。但出口一直在下面。低头不是认输，是看见真正的路。',
+    },
   },
   {
     id: 'memory_why_alive',
@@ -212,6 +362,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     keywords: ['活着', '意义', '死亡', '贪', '怕', '想不清'],
     dustName: '我必须成为什么',
     isCore: true,
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '深夜，他反复问自己：如果我死了，也许会有人难过。可他们难过我又不在乎。我都不在乎别人，别人为什么要在乎我？那么我为什么要活着？我在乎的那个人一点都不在乎我。我是因为想要得到什么而去在乎他，还是我想要的？',
+      innerVoice: '不知生为何意，还恐死时不甘。究竟贪什么？究竟怕什么？十年想不清，十年说不出。',
+    },
+    resolved_version: {
+      content: '那时我以为活着需要一个理由，现在看，活着本身就是理由。我不必成为什么才配活着，也不必被谁在乎才有价值。贪的是存在本身，怕的是从未真正活过。',
+      innerVoice: '十年想不清，是因为答案不在想里。活着不需要理由，需要的是勇气——承认我贪生怕死，然后继续活的勇气。',
+    },
   },
   {
     id: 'memory_zhixingheyi',
@@ -224,6 +384,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     age: 22,
     isHealed: false,
     keywords: ['知行合一', '王阳明', '行动', '知识', '实事求是', '顿悟'],
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他偶然读到王阳明"知行合一"，产生了自己的理解。他不是在说你应该怎么做，他在说一个陈述事实。你觉得的，会体现在行动上。就像学游泳，在岸上学到的知识和在水里学到的是不一样的。如果想要行动正确，就要获得真正的知，所以要从实际出发，实事求是。',
+      innerVoice: '他不是在说你应该怎么做，他在说一个陈述事实。你觉得的，会体现在行动上。如果你想要行动正确，就要获得真正的知。',
+    },
+    resolved_version: {
+      content: '那时我以为知行合一是一个道理，现在看，它是一种活法。不是知道了很多才去做，而是在做中才知道。我不再等想明白了再行动，因为真正的明白只在行动中发生。',
+      innerVoice: '知行合一不是目标，是起点。每一次行动都是新的知，每一次知都指向新的行动。这就是活着的节奏。',
+    },
   },
   {
     id: 'memory_advice_to_juniors',
@@ -236,6 +406,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     age: 24,
     isHealed: false,
     keywords: ['师弟师妹', '体验', '无产阶级', '弯路', '意义', '学习'],
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他在日记里写：如果考上了研，想对师弟师妹说——体验一下父母的工作，去看看无产阶级的生活。这不会浪费多少时间，但如果能因此想明白学习和考试的意义，那已经比我少走十年弯路。造成如此情况的原因他当然知道，但找到答案的过程本身才是学习。',
+      innerVoice: '体验一下父母的工作，去看看无产阶级的生活。如果因此想明白学习的意义，那已经比我少走十年弯路。',
+    },
+    resolved_version: {
+      content: '那时我想让别人少走弯路，现在看，弯路本身就是路。我可以分享经验，但不能替别人走。每个人找到答案的过程，就是那个答案本身。',
+      innerVoice: '十年弯路不是浪费，是我走到这里的唯一方式。我不再想帮别人绕过它，而是想告诉他们：弯路不可怕，可怕的是不走。',
+    },
   },
   {
     id: 'memory_math_joy',
@@ -249,6 +429,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['数学', '解题', '思考', '快乐', '思维', '锻炼'],
     isCore: true,
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他第一次感受到"思考的快乐"。解出一道难题后的筋疲力尽，像打了一场大胜仗。思维得到锻炼，那种感觉很爽很快乐。他甚至很希望遇到难题，然后将它们一个个解决。这是心印最早的锚点——他本就爱求知，不是被逼的。',
+      innerVoice: '思维得到锻炼，那种感觉很爽很快乐。像打了一场大胜仗。',
+    },
+    resolved_version: {
+      content: '那时我在数学里找到了纯粹的快乐，现在看，那个快乐从未离开。它只是被太多"应该"和"必须"盖住了。拨开那些灰尘，我还是那个遇到难题会兴奋的小孩。',
+      innerVoice: '快乐不需要理由，思考本身就是奖赏。那个十岁的我已经知道了最重要的事——热爱不需要证明。',
+    },
   },
   {
     id: 'memory_save_cat',
@@ -261,6 +451,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     age: 22,
     isHealed: false,
     keywords: ['猫', '救', '选择', '活路', '牺牲', '自己'],
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他在水下，最后时刻选择救猫而非自己逃生。他抱起猫就往上游，可河比想象中更深，他感觉自己也陷入了死胡同。他不再挣扎，看着小猫闭上了眼睛。他对猫说：对不起，我救不了你了。猫流下了眼泪。他突然明白了——救猫就是救自己，唯一的活路就是他想救猫。',
+      innerVoice: '主人不想让猫死。如果我救了猫，他就让我活。唯一的活路，就是我想救猫。',
+    },
+    resolved_version: {
+      content: '那时我以为救猫是牺牲自己，现在看，救猫就是救自己——这不是比喻，是事实。当我不再只为自己活的时候，反而找到了活路。利他不是道德绑架，是生命本身的逻辑。',
+      innerVoice: '救猫就是救自己，这不是巧合。当我真心想救另一个生命的时候，我自己也就有了活下去的理由。',
+    },
   },
   {
     id: 'memory_crescent_spirit',
@@ -273,6 +473,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     age: 22,
     isHealed: false,
     keywords: ['新月', '精神', '感染', '学习', '张弛有度', '影响'],
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '新月学习时全神贯注，放松时大大方方。她的存在让他相信：学习不必是折磨，可以是一种张弛有度的生活。在她的影响之下，他到了后期还是可以继续学习，而不至于十分摆烂。这是他遇到的最正向的人际影响，是心印被唤醒的锚点。',
+      innerVoice: '她的精神感染了我，让我可以继续学习。学习不必是折磨，可以是一种张弛有度的生活。',
+    },
+    resolved_version: {
+      content: '那时我以为新月的感染是依赖，现在看，那是一种唤醒。她没有改变我，只是让我看见了自己本来的样子——专注时全神贯注，放松时大大方方。那就是我心印的样子。',
+      innerVoice: '她不是给了我什么，是让我想起了自己本来就有的东西。心印不需要被赋予，只需要被唤醒。',
+    },
   },
   {
     id: 'memory_walk_alone',
@@ -285,6 +495,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     age: 23,
     isHealed: false,
     keywords: ['走路', '独处', '安静', '放松', '散步', '自己'],
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他一个人走了很久，脑子里的声音渐渐安静。没有目标，没有任务，只是走。有的人放松是和别人聊天，他更喜欢一个人出来走走。现在已经走了4公里了。这是他少有的让自己放松的方式，也是他与自己对话的时刻。',
+      innerVoice: '有的人放松是和别人聊天，我更喜欢一个人出来走走。现在已经走了4公里了。',
+    },
+    resolved_version: {
+      content: '那时我以为独处是逃避，现在看，独处是回归。在走路的时候，我不是在逃离什么，是在走向自己。那4公里不是距离，是我和自己重新连接的路程。',
+      innerVoice: '一个人走路不是孤独，是自由。脑子里的声音安静了，心里的声音才能被听见。',
+    },
   },
   {
     id: 'memory_enlightenment_sweep',
@@ -298,6 +518,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['悟道', '灰尘', '执念', '知行合一', '扫尘', '觉醒'],
     isCore: true,
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他进入那个空房间，面对漂浮的灰尘文字——"我必须成功""他们都看不起我""我不配被爱""都是他们害的""我不能失败"。每点击一次灰尘，他多一句理解。那些曾经压在他心上的执念，在光中显出了原形：它们不是真理，只是灰尘。最终他说出了那句话。',
+      innerVoice: '知是行之始，行是知之成。',
+    },
+    resolved_version: {
+      content: '那时我以为扫尘是消灭执念，现在看，扫尘是看见执念——看见它们只是灰尘，不是真理。它们还在，但我不再被它们控制。悟道不是一劳永逸，是每一天都选择不被灰尘遮住眼睛。',
+      innerVoice: '灰尘不会消失，但光一直在。知是行之始，行是知之成——每一次看见灰尘，就是一次知；每一次不被它控制，就是一次行。',
+    },
   },
   {
     id: 'memory_sister_choice',
@@ -311,6 +541,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['姐姐', '选择', '志愿', '文科', '理科', '牺牲'],
     dustName: '没人真正爱我/我不配被爱',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '他回忆起姐姐考大学那年。她明明想学文，写出的文章被老师当范文念。但父母说"理科好就业"。她没有反抗，默默改了志愿表。多年后他才意识到，那张志愿表意味着什么——姐姐献祭了自己的心印，换来了全家的安心。',
+      innerVoice: '她没有反抗，就像我也没有反抗。我们都是被同一套规则驯服的人。但她比我更早，更彻底。',
+    },
+    resolved_version: {
+      content: '那时我以为姐姐是牺牲者，现在看，她也是选择者。在那个处境里，她做了她能做的选择。我不必替她遗憾，我需要做的是——不让她的牺牲变得毫无意义，活出她没能活出的人生。',
+      innerVoice: '她替全家扛了，我不能再替自己逃了。她的选择不是我的枷锁，是我的警醒——我还有机会，她给我留了这条路。',
+    },
   },
   {
     id: 'memory_father_stroke',
@@ -324,6 +564,16 @@ export const MEMORY_SCRIPTS: Memory[] = [
     isHealed: false,
     keywords: ['父亲', '脑梗', '医院', '姐姐', '坚强', '不能怕'],
     dustName: '我不能失败',
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '父亲脑梗那天，他赶到医院，看到姐姐在走廊上。她没有哭，只是在打电话安排所有事——通知亲戚、联系医生、处理保险。那是他第一次觉得"我姐什么都不怕"。后来才知道，她是不能怕。她怕了，这个家就真的散了。',
+      innerVoice: '她不能怕。她怕了，这个家就真的散了。那我呢？我连怕的资格都没有，因为我什么都没做。',
+    },
+    resolved_version: {
+      content: '那时我以为我什么都没做是因为没资格，现在看，是我把自己排除在外了。姐姐扛住了，不代表我不需要扛。她不能怕，不代表我必须怕。我也可以成为那个让家不散的人。',
+      innerVoice: '她不是不怕，是选择了扛。我也可以选择扛——不是因为我什么都不怕，是因为这个家值得我扛。',
+    },
   },
   {
     id: 'memory_keke_born',
@@ -336,5 +586,15 @@ export const MEMORY_SCRIPTS: Memory[] = [
     age: 23,
     isHealed: false,
     keywords: ['可可', '出生', '婴儿', '希望', '新生命', '手指'],
+    resolution_state: 'unresolved',
+    version_triggered_count: 0,
+    unresolved_version: {
+      content: '2021年，姐姐生了可可。他去医院看她，看到疲惫的姐姐抱着婴儿，笑得不像平时那样"完美"，但很真。他第一次抱起那个小小的生命，可可抓住了他的手指。那一刻他短暂地感到：有个新的生命，也许一切还有希望。',
+      innerVoice: '她抓住了我的手指。那么小的手，那么大的力量。也许，活着不只是为了自己。',
+    },
+    resolved_version: {
+      content: '那时我以为希望是可可给我的，现在看，希望是我自己选择的。她抓住我手指的那一刻，我选择了相信——相信新生命，相信未来，相信活着可以有理由。那个理由不是她给的，是我自己给的。',
+      innerVoice: '可可没有给我希望，是她让我发现希望一直都在。那么小的手抓住我的时候，我抓住的是自己活着的意愿。',
+    },
   },
 ];

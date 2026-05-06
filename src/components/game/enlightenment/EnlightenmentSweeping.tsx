@@ -99,7 +99,7 @@ export const EnlightenmentSweeping: React.FC = () => {
           }}
           onClick={() => handleDustClick(dust.id)}
         >
-          <span className="text-xs text-stone-400/60 whitespace-nowrap hover:text-stone-300/80 transition-colors duration-200">
+          <span className={`text-xs whitespace-nowrap hover:text-stone-300/80 transition-colors duration-200 ${dust.isFallback ? 'text-stone-500/40' : 'text-stone-400/60'}`}>
             {dust.text}
           </span>
         </div>
