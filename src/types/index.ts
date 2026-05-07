@@ -35,7 +35,7 @@ export type { XinYinAnchor, AnchorState, AnchorTriggerType } from './anchor';
 
 export type { EmotionTrigger, EmotionType, TriggeredEmotion } from './emotionTrigger';
 
-export type { NpcRole, FamilyRole, NpcKey, NpcEventFrequency, NpcEvent, Npc } from './npc';
+export type { NpcRole, FamilyRole, NpcKey, NpcCategory, ContactType, ContactInitiator, NpcEventFrequency, ContactRecord, NormalFrequency, AffectionThresholds, NpcEvent, Npc } from './npc';
 
 export type { TaskTrack, TaskSource, TaskUrgency, PersonalPlanTerm, GameTask, PersonalPlan, TaskConflict } from './task';
 

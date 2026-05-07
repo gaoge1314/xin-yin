@@ -10,6 +10,7 @@ const ROLE_LABELS: Record<string, string> = {
   mother: '母亲',
   sister: '姐姐',
   niece: '可可',
+  xinyue: '新月',
   colleague_male: '同事',
   colleague_female: '同事',
   old_friend: '老友',

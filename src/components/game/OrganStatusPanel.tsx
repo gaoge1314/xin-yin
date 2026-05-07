@@ -19,7 +19,12 @@ const ORGAN_COLORS: Record<keyof OrganHealth, { healthy: string; warning: string
 };
 
 export const OrganStatusPanel: React.FC = () => {
-  const organs = useOrganStore();
+  const heart = useOrganStore((s) => s.heart);
+  const liver = useOrganStore((s) => s.liver);
+  const spleen = useOrganStore((s) => s.spleen);
+  const lungs = useOrganStore((s) => s.lungs);
+  const stomach = useOrganStore((s) => s.stomach);
+  const organs: OrganHealth = { heart, liver, spleen, lungs, stomach };
 
   const getOrganColor = (organ: keyof OrganHealth, value: number) => {
     const colors = ORGAN_COLORS[organ];

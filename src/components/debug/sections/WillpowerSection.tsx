@@ -3,21 +3,27 @@ import { SliderControl } from '../SliderControl';
 import { ToggleControl } from '../ToggleControl';
 
 export const WillpowerSection: React.FC = () => {
-  const store = useWillpowerStore();
+  const current = useWillpowerStore((s) => s.current);
+  const max = useWillpowerStore((s) => s.max);
+  const recoveryRate = useWillpowerStore((s) => s.recoveryRate);
+  const isDepressed = useWillpowerStore((s) => s.isDepressed);
+  const depressedDays = useWillpowerStore((s) => s.depressedDays);
+  const consecutiveGoodSleep = useWillpowerStore((s) => s.consecutiveGoodSleep);
+  const isRecoveringMax = useWillpowerStore((s) => s.isRecoveringMax);
 
   return (
     <div>
       <SliderControl
         label="当前意志力"
-        value={store.current}
+        value={current}
         min={0}
-        max={store.max}
+        max={max}
         step={1}
         onChange={(value) => useWillpowerStore.setState({ current: value })}
       />
       <SliderControl
         label="最大意志力"
-        value={store.max}
+        value={max}
         min={20}
         max={100}
         step={1}
@@ -25,7 +31,7 @@ export const WillpowerSection: React.FC = () => {
       />
       <SliderControl
         label="恢复速率"
-        value={store.recoveryRate}
+        value={recoveryRate}
         min={0}
         max={10}
         step={0.5}
@@ -33,12 +39,12 @@ export const WillpowerSection: React.FC = () => {
       />
       <ToggleControl
         label="是否低迷"
-        checked={store.isDepressed}
+        checked={isDepressed}
         onChange={(value) => useWillpowerStore.setState({ isDepressed: value })}
       />
       <SliderControl
         label="低迷天数"
-        value={store.depressedDays}
+        value={depressedDays}
         min={0}
         max={999}
         step={1}
@@ -46,7 +52,7 @@ export const WillpowerSection: React.FC = () => {
       />
       <SliderControl
         label="连续好觉天数"
-        value={store.consecutiveGoodSleep}
+        value={consecutiveGoodSleep}
         min={0}
         max={999}
         step={1}
@@ -54,7 +60,7 @@ export const WillpowerSection: React.FC = () => {
       />
       <ToggleControl
         label="是否恢复上限中"
-        checked={store.isRecoveringMax}
+        checked={isRecoveringMax}
         onChange={(value) => useWillpowerStore.setState({ isRecoveringMax: value })}
       />
     </div>

@@ -14,6 +14,8 @@ export function npcIdToSpeakerRole(npcId: NpcKey): SpeakerRole {
       return 'father';
     case 'sister':
       return 'sister';
+    case 'xinyue':
+      return 'npc';
     default:
       return 'npc';
   }

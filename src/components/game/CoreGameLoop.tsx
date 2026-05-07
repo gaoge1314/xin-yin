@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { ClockDisplay } from './ClockDisplay';
 import { WillpowerDisplay } from './WillpowerDisplay';
 import { CognitionPanel } from './CognitionPanel';
@@ -17,6 +17,8 @@ import { WorldInfoPanel } from './WorldInfoPanel';
 import { RecentInteractionsPanel } from './RecentInteractionsPanel';
 import { CollapsiblePanel } from '../ui/CollapsiblePanel';
 import { DustListPanel } from './DustListPanel';
+import { ContactPanel } from './ContactPanel';
+import { ContactFlowOverlay } from './ContactFlowOverlay';
 import { VagusNerveMoment } from './VagusNerveMoment';
 import { DeepNumbnessOverlay } from './DeepNumbnessOverlay';
 import { MicroEnlightenmentNarrative } from './MicroEnlightenmentNarrative';
@@ -29,7 +31,7 @@ import { useTriggerStore } from '../../stores/useTriggerStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { getConnectionTier, CONNECTION_TIER_COLORS, CONNECTION_TIER_DESCRIPTIONS } from '../../types/trust';
 import type { ConnectionTier } from '../../types/trust';
-import { TIME_OF_DAY_LABELS } from '../../types/time';
+import { TIME_OF_DAY_LABELS, getTimeOfDay as deriveTimeOfDay } from '../../types/time';
 
 type PhaseUI = 'morning-ritual' | 'daytime' | 'evening-monologue' | 'dream-fragment' | 'default';
 
@@ -91,23 +93,27 @@ export const CoreGameLoop: React.FC = () => {
     return () => clearInterval(checkInterval);
   }, [currentPhaseUI]);
 
-  const timeOfDay = useTimeStore((s) => s.getTimeOfDay());
-  const activeEvent = useWorldEventStore((s) => s.activeEventId)
-    ? useWorldEventStore.getState().getActiveEvent()
-    : null;
+  const hour = useTimeStore((s) => s.hour);
+  const timeOfDay = deriveTimeOfDay(hour);
+  const activeEventId = useWorldEventStore((s) => s.activeEventId);
+  const activeEvent = useMemo(() => {
+    if (!activeEventId) return null;
+    return useWorldEventStore.getState().getActiveEvent();
+  }, [activeEventId]);
   const activeNpcDialog = useNpcStore((s) => s.activeNpcDialog);
+  const contactRequest = useNpcStore((s) => s.contactRequest);
   const inputBoxState = useTriggerStore((s) => s.inputBoxState);
 
-  const tierInfo = usePlayerStore((s) => {
-    const level = s.trustLevel;
-    const tier = getConnectionTier(level);
+  const trustLevel = usePlayerStore((s) => s.trustLevel);
+  const tierInfo = useMemo(() => {
+    const tier = getConnectionTier(trustLevel);
     return {
       tier,
       color: CONNECTION_TIER_COLORS[tier],
       description: CONNECTION_TIER_DESCRIPTIONS[tier],
-      level,
+      level: trustLevel,
     };
-  });
+  }, [trustLevel]);
 
   const xinYinLevel = usePlayerStore((s) => s.xinYinLevel);
   const herdLevel = usePlayerStore((s) => s.herdLevel);
@@ -127,6 +133,14 @@ export const CoreGameLoop: React.FC = () => {
       useTimeStore.getState().resume('npc-dialog');
     }
   }, [activeNpcDialog?.eventId]);
+
+  useEffect(() => {
+    if (contactRequest) {
+      useTimeStore.getState().pause('contact-flow');
+    } else {
+      useTimeStore.getState().resume('contact-flow');
+    }
+  }, [contactRequest?.phase]);
 
   const renderPhaseOverlay = () => {
     if (activeNpcDialog) {
@@ -253,6 +267,7 @@ export const CoreGameLoop: React.FC = () => {
 
         <CollapsiblePanel title="世界" side="right" defaultOpen={true}>
           <div className="flex flex-col gap-4">
+            <ContactPanel />
             <WorldInfoPanel />
             <div className="border-t border-white/5 pt-3">
               <RecentInteractionsPanel />
@@ -268,6 +283,7 @@ export const CoreGameLoop: React.FC = () => {
       </div>
 
       <DustListPanel />
+      <ContactFlowOverlay />
       <VagusNerveMoment />
       <DeepNumbnessOverlay />
       <MicroEnlightenmentNarrative

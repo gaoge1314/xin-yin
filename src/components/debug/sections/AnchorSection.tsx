@@ -3,7 +3,7 @@ import { SliderControl } from '../SliderControl';
 import { ToggleControl } from '../ToggleControl';
 
 export const AnchorSection: React.FC = () => {
-  const { anchors } = useAnchorStore();
+  const anchors = useAnchorStore((s) => s.anchors);
 
   return (
     <div>

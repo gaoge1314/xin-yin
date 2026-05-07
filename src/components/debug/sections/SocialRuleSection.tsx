@@ -3,7 +3,7 @@ import { SliderControl } from '../SliderControl';
 import { ToggleControl } from '../ToggleControl';
 
 export const SocialRuleSection: React.FC = () => {
-  const { rules } = useSocialRuleStore();
+  const rules = useSocialRuleStore((s) => s.rules);
 
   return (
     <div>

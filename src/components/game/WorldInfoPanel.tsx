@@ -19,16 +19,18 @@ const CATEGORY_STYLES: Record<string, string> = {
 };
 
 export const WorldInfoPanel: React.FC = () => {
-  const timeState = useTimeStore();
+  const totalDays = useTimeStore((s) => s.totalDays);
+  const currentYear = useTimeStore((s) => s.currentYear);
+  const season = useTimeStore((s) => s.season);
   const history = useWorldEventStore((s) => s.history);
-  const dayOfWeek = getDayOfWeek(timeState.totalDays);
+  const isConditionMet = useWorldEventStore((s) => s.isConditionMet);
+  const dayOfWeek = getDayOfWeek(totalDays);
 
-  const currentYear = timeState.currentYear;
-  const seasonLabel = SEASON_LABELS[timeState.season];
+  const seasonLabel = SEASON_LABELS[season];
 
   const pendingEvents = WORLD_EVENTS.filter((event) => {
     if (history.some((r) => r.eventId === event.id)) return false;
-    return useWorldEventStore.getState().isConditionMet(event);
+    return isConditionMet(event);
   });
 
   const historyWithContent: (EventRecord & { content?: string; category?: string })[] = history
@@ -53,7 +55,7 @@ export const WorldInfoPanel: React.FC = () => {
           <span className="text-white/30 text-[10px]">当前</span>
         </div>
         <div className="text-white/50 text-[11px] leading-tight space-y-0.5">
-          <div>{currentYear}年 · {seasonLabel} · 第{timeState.totalDays + 1}天 · {DAY_OF_WEEK_LABELS[dayOfWeek]}</div>
+          <div>{currentYear}年 · {seasonLabel} · 第{totalDays + 1}天 · {DAY_OF_WEEK_LABELS[dayOfWeek]}</div>
         </div>
         {pendingEvents.length > 0 && (
           <div className="mt-1.5 space-y-1">

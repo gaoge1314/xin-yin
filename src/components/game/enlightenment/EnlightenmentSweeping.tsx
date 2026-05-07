@@ -13,8 +13,9 @@ const DUST_TYPE_LABELS: Record<DustType, string> = {
 };
 
 export const EnlightenmentSweeping: React.FC = () => {
-  const { exitSweepDust, selectDustCognition } = useEnlightenmentStore();
-  const { cognitions } = useCognitionStore();
+  const exitSweepDust = useEnlightenmentStore((s) => s.exitSweepDust);
+  const selectDustCognition = useEnlightenmentStore((s) => s.selectDustCognition);
+  const cognitions = useCognitionStore((s) => s.cognitions);
 
   const unlockedCognitions = cognitions.filter(c => c.isUnlocked);
   const unrelievedCognitions = unlockedCognitions.filter(c => !c.isRelieved && !c.isTransformed);

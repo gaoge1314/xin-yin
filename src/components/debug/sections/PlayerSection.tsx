@@ -3,13 +3,16 @@ import { SliderControl } from '../SliderControl';
 import { ToggleControl } from '../ToggleControl';
 
 export const PlayerSection: React.FC = () => {
-  const store = usePlayerStore();
+  const xinYinLevel = usePlayerStore((s) => s.xinYinLevel);
+  const trustLevel = usePlayerStore((s) => s.trustLevel);
+  const consecutiveUtilitarian = usePlayerStore((s) => s.consecutiveUtilitarian);
+  const hasEnlightenment = usePlayerStore((s) => s.hasEnlightenment);
 
   return (
     <div>
       <SliderControl
         label="心印等级"
-        value={store.xinYinLevel}
+        value={xinYinLevel}
         min={0}
         max={100}
         step={1}
@@ -17,7 +20,7 @@ export const PlayerSection: React.FC = () => {
       />
       <SliderControl
         label="信任度"
-        value={store.trustLevel}
+        value={trustLevel}
         min={0}
         max={100}
         step={1}
@@ -25,12 +28,12 @@ export const PlayerSection: React.FC = () => {
       />
       <ToggleControl
         label="冷淡回应"
-        checked={store.isColdResponse()}
+        checked={usePlayerStore.getState().isColdResponse()}
         onChange={() => {}}
       />
       <SliderControl
         label="连续功利次数"
-        value={store.consecutiveUtilitarian}
+        value={consecutiveUtilitarian}
         min={0}
         max={10}
         step={1}
@@ -38,7 +41,7 @@ export const PlayerSection: React.FC = () => {
       />
       <ToggleControl
         label="是否已顿悟"
-        checked={store.hasEnlightenment}
+        checked={hasEnlightenment}
         onChange={(value) => usePlayerStore.setState({ hasEnlightenment: value })}
       />
     </div>

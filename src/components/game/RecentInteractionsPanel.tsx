@@ -7,9 +7,10 @@ const NPC_STYLES: Record<string, string> = {
   mother: 'text-pink-400/70',
   sister: 'text-blue-400/70',
   niece: 'text-green-400/70',
+  xinyue: 'text-purple-400/70',
   colleague_male: 'text-amber-400/70',
   colleague_female: 'text-amber-400/70',
-  old_friend: 'text-purple-400/70',
+  old_friend: 'text-cyan-400/70',
 };
 
 export const RecentInteractionsPanel: React.FC = () => {

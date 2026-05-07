@@ -3,7 +3,7 @@ import { SliderControl } from '../SliderControl';
 import { ToggleControl } from '../ToggleControl';
 
 export const CognitionSection: React.FC = () => {
-  const { cognitions } = useCognitionStore();
+  const cognitions = useCognitionStore((s) => s.cognitions);
 
   return (
     <div>

@@ -1,4 +1,66 @@
-﻿
+﻿﻿
+## [v5.2] - 2026-05-07
+
+### 核心变更
+
+新增NPC联系系统，实现玩家建议联系→主角自主决定→方式商量→联系后果的完整流程。
+
+| 变更 | 旧设计 | 新设计 |
+|:---|:---|:---|
+| NPC分类 | `NpcRole`: FAMILY/SOCIAL/WORK | **四级分类**: 家人/旧识/故交/新识 |
+| 联系追踪 | `InteractionRecord`仅事件ID | **完整追踪**: lastContact/contactHistory/normalFrequency |
+| 好感度 | `currentCloseness` | **重命名为** `affection` + `affectionThresholds` |
+| 主动联系 | 无 | **新增** 玩家建议→主角接受/拒绝→方式商量 |
+| 新月 | 仅在记忆/锚点中 | **新增为NPC**，初期不可联系 |
+
+### 新增功能
+
+#### NPC联系追踪系统
+- 自动记录每次NPC互动的时间和摘要
+- `lastContact`: 上次联系日期/方式/发起方/摘要/关键词
+- `contactHistory`: 联系历史记录（最多50条）
+- `normalFrequency`: 正常联系频率描述
+
+#### 联系人四级面板
+- 第一级：`[♡ 牵挂]` 按钮，常驻右侧面板
+- 第二级：分类列表（家人/旧识/故交/新识）
+- 第三级：NPC列表，时间颜色标记（7天内正常/7-14天淡黄/14-21天橙/21天+深红）
+- 第四级：NPC详情，显示联系记录和"建议主角联系"按钮
+
+#### 联系流程
+- 玩家建议联系 → 主角接受概率计算 → 方式协商 → 联系场景 → 结果记录
+- 接受概率：基础50% + 连接度/好感度/意志力/深度麻木/微悟等因素叠加（10%-90%）
+- 联系类型：电话/发消息/上门/写信
+- 联系后果：温暖/平淡/尴尬/冲突/触发隐藏事件/失望
+
+#### 特殊NPC联系机制
+- **父亲**: 需连接度≥倾听且意志力≥40才可能接受，拒绝概率极高
+- **新月**: 初期不可联系，触发特定回忆后解锁，第一次联系消耗50%当前意志力
+- **可可**: 永远接受联系，不受意志力/连接度影响，联系结果永远正向
+
+#### 存档系统扩展
+- NPC数据完整序列化/反序列化
+- 联系历史、好感度、介绍状态持久化
+
+### 文件变更
+
+#### 新增文件（2个）
+- `src/components/game/ContactPanel.tsx` - 联系人四级面板UI
+- `src/components/game/ContactFlowOverlay.tsx` - 联系流程覆盖层
+
+#### 修改文件
+- `src/types/npc.ts` - 新增NpcCategory/ContactType/ContactRecord等类型，扩展Npc接口
+- `src/types/index.ts` - 导出新类型
+- `src/data/npcs/initialNpcs.ts` - 4个家庭成员补充联系字段，新增新月/老友/同事小陈/同事小林
+- `src/stores/useNpcStore.ts` - 新增suggestContact/recordContact/calculateAcceptanceProbability/negotiateContactType/completeContact等方法
+- `src/components/game/CoreGameLoop.tsx` - 集成ContactPanel和ContactFlowOverlay
+- `src/stores/useGameStore.ts` - 存档/读档支持NPC数据
+- `src/components/game/NpcDialogModal.tsx` - 添加新月角色标签
+- `src/systems/dialogue/buildDialogueInput.ts` - 添加新月speaker映射
+- `src/components/game/RecentInteractionsPanel.tsx` - 添加新月/老友样式
+
+---
+
 ## [v5.1] - 2026-05-06
 
 ### 核心变更

@@ -14,7 +14,8 @@ const DUST_TYPE_LABELS: Record<DustType, string> = {
 export const DustListPanel: React.FC = () => {
   const isSweepDustActive = useEnlightenmentStore((s) => s.isSweepDustActive);
   const selectedDustCognitionId = useEnlightenmentStore((s) => s.selectedDustCognitionId);
-  const { exitSweepDust, selectDustCognition } = useEnlightenmentStore();
+  const exitSweepDust = useEnlightenmentStore((s) => s.exitSweepDust);
+  const selectDustCognition = useEnlightenmentStore((s) => s.selectDustCognition);
   const cognitions = useCognitionStore((s) => s.cognitions);
 
   if (!isSweepDustActive) return null;

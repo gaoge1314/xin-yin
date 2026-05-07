@@ -12,7 +12,12 @@ const ORGAN_KEYS: (keyof OrganHealth)[] = [
 ];
 
 export const OrganSection: React.FC = () => {
-  const store = useOrganStore();
+  const heart = useOrganStore((s) => s.heart);
+  const liver = useOrganStore((s) => s.liver);
+  const spleen = useOrganStore((s) => s.spleen);
+  const lungs = useOrganStore((s) => s.lungs);
+  const stomach = useOrganStore((s) => s.stomach);
+  const store = { heart, liver, spleen, lungs, stomach };
 
   return (
     <div>

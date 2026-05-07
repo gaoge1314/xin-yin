@@ -12,7 +12,12 @@ const PERSONALITY_KEYS: (keyof Personality)[] = [
 ];
 
 export const PersonalitySection: React.FC = () => {
-  const store = usePersonalityStore();
+  const cognitionActionSensitivity = usePersonalityStore((s) => s.cognitionActionSensitivity);
+  const selfAwareness = usePersonalityStore((s) => s.selfAwareness);
+  const retreatInertia = usePersonalityStore((s) => s.retreatInertia);
+  const xinYinAwakenDifficulty = usePersonalityStore((s) => s.xinYinAwakenDifficulty);
+  const meaningObsession = usePersonalityStore((s) => s.meaningObsession);
+  const store = { cognitionActionSensitivity, selfAwareness, retreatInertia, xinYinAwakenDifficulty, meaningObsession };
 
   return (
     <div>

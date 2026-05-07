@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Npc, NpcKey, NpcEvent, NpcEventFrequency } from '../types/npc';
+import type { Npc, NpcKey, NpcEvent, NpcEventFrequency, NpcCategory, ContactType, ContactRecord, ContactInitiator } from '../types/npc';
 import { INITIAL_NPCS } from '../data/npcs/initialNpcs';
 import { useTimeStore } from './useTimeStore';
 import { useSceneStore } from './useSceneStore';
@@ -7,12 +7,14 @@ import { usePlayerStore } from './usePlayerStore';
 import { useCognitionStore } from './useCognitionStore';
 import { useWillpowerStore } from './useWillpowerStore';
 import { useOrganStore } from './useOrganStore';
-import { getDayOfWeek } from '../types/time';
+import { useMicroEnlightenmentStore } from './useMicroEnlightenmentStore';
+import { getDayOfWeek, getYear, START_YEAR } from '../types/time';
 import { calculateDialogueConstraints } from '../systems/dialogue/calculateConstraints';
 import { generateProtagonistResponse } from '../systems/dialogue/generateResponse';
 import { buildDialogueInputForNpc, detectTriggeredTag } from '../systems/dialogue/buildDialogueInput';
 import type { DialogueConstraints } from '../types/dialogue';
 import { useDialogueMemoryStore } from '../systems/dialogue/dialogueMemoryCache';
+import { getConnectionTier } from '../types/trust';
 
 const FREQUENCY_DAYS: Record<NpcEventFrequency, number> = {
   daily: 1,
@@ -46,12 +48,53 @@ export interface InteractionRecord {
   hour: number;
 }
 
+export type ContactRequestPhase = 'pending' | 'accepted' | 'refused' | 'negotiating' | 'in_progress' | 'completed';
+
+export interface ContactRequest {
+  npcId: NpcKey;
+  npcName: string;
+  accepted: boolean;
+  refusalReason?: string;
+  contactType?: ContactType;
+  phase: ContactRequestPhase;
+  protagonistPreference?: string;
+}
+
+const NPC_CATEGORY_ORDER: NpcCategory[] = ['家人', '旧识', '故交', '新识'];
+
+const REFUSAL_REASONS_HIGH_CONNECTION = [
+  '现在不想……过两天吧。',
+  '我需要准备一下，不知道说什么。',
+  '让我想想，什么时候合适。',
+];
+
+const REFUSAL_REASONS_LOW_CONNECTION = [
+  '……',
+  '不想。',
+  '算了。',
+];
+
+const CONTACT_TYPE_PREFERENCES: Record<string, ContactType[]> = {
+  low_willpower: ['发消息', '写信', '电话', '上门'],
+  high_connection: ['电话', '上门', '写信', '发消息'],
+  default: ['发消息', '电话', '写信', '上门'],
+};
+
+function formatGameDate(day: number): string {
+  const year = getYear(day);
+  const seasonIndex = Math.floor((day % 360) / 90);
+  const seasonDay = (day % 90) + 1;
+  const seasonLabels = ['春', '夏', '秋', '冬'];
+  return `${year}年${seasonLabels[seasonIndex]}季第${seasonDay}天`;
+}
+
 interface NpcActions {
   checkIntroductions: () => Npc[];
   checkEvents: () => NpcEvent[];
   triggerEvent: (event: NpcEvent) => void;
   triggerEventAsDialog: (event: NpcEvent) => void;
   adjustCloseness: (npcId: NpcKey, delta: number) => void;
+  adjustAffection: (npcId: NpcKey, delta: number) => void;
   getIntroducedNpcs: () => Npc[];
   getNpc: (npcId: NpcKey) => Npc | undefined;
   reset: () => void;
@@ -64,6 +107,16 @@ interface NpcActions {
   checkTimeSpecificEvents: () => void;
   getRecentInteractions: (count?: number) => InteractionRecord[];
   updateMealTracking: () => void;
+  recordContact: (npcId: NpcKey, record: ContactRecord) => void;
+  suggestContact: (npcId: NpcKey) => void;
+  calculateAcceptanceProbability: (npcId: NpcKey) => number;
+  negotiateContactType: (npcId: NpcKey, playerSuggestion: string) => void;
+  confirmContactType: (contactType: ContactType) => void;
+  completeContact: (summary: string) => void;
+  dismissContactRequest: () => void;
+  getNpcsByCategory: (category: NpcCategory) => Npc[];
+  getDaysSinceLastContact: (npcId: NpcKey) => number;
+  unlockNpcContact: (npcId: NpcKey) => void;
 }
 
 export const useNpcStore = create<{
@@ -74,6 +127,7 @@ export const useNpcStore = create<{
   mealConsecutiveDays: number;
   mealAutoHandled: boolean;
   daysApartFromMother: number;
+  contactRequest: ContactRequest | null;
 } & NpcActions>((set, get) => ({
   npcs: [...INITIAL_NPCS],
   activeNpcDialog: null,
@@ -82,6 +136,7 @@ export const useNpcStore = create<{
   mealConsecutiveDays: 0,
   mealAutoHandled: false,
   daysApartFromMother: 0,
+  contactRequest: null,
 
   checkIntroductions: (): Npc[] => {
     const timeState = useTimeStore.getState();
@@ -311,9 +366,26 @@ export const useNpcStore = create<{
       });
     }
 
+    const contactRecord: ContactRecord = {
+      gameDay: timeState.totalDays,
+      gameDate: formatGameDate(timeState.totalDays),
+      type: '电话',
+      initiator: 'NPC',
+      summary: dialog.content.substring(0, 50),
+      keywords: [],
+    };
+
     set((s) => ({
       activeNpcDialog: null,
       interactionHistory: [record, ...s.interactionHistory].slice(0, 30),
+      npcs: s.npcs.map((npc) => {
+        if (npc.id !== dialog.npcId) return npc;
+        return {
+          ...npc,
+          lastContact: contactRecord,
+          contactHistory: [contactRecord, ...npc.contactHistory].slice(0, 50),
+        };
+      }),
     }));
   },
 
@@ -329,9 +401,25 @@ export const useNpcStore = create<{
     set((state) => ({
       npcs: state.npcs.map((npc) => {
         if (npc.id !== npcId) return npc;
+        const newCloseness = Math.max(0, Math.min(100, npc.currentCloseness + delta));
         return {
           ...npc,
-          currentCloseness: Math.max(0, Math.min(100, npc.currentCloseness + delta)),
+          currentCloseness: newCloseness,
+          affection: newCloseness,
+        };
+      }),
+    }));
+  },
+
+  adjustAffection: (npcId: NpcKey, delta: number) => {
+    set((state) => ({
+      npcs: state.npcs.map((npc) => {
+        if (npc.id !== npcId) return npc;
+        const newAffection = Math.max(0, Math.min(100, npc.affection + delta));
+        return {
+          ...npc,
+          affection: newAffection,
+          currentCloseness: newAffection,
         };
       }),
     }));
@@ -346,7 +434,16 @@ export const useNpcStore = create<{
   },
 
   reset: () => {
-    set({ npcs: [...INITIAL_NPCS], activeNpcDialog: null, pendingDialogs: [], interactionHistory: [], mealConsecutiveDays: 0, mealAutoHandled: false, daysApartFromMother: 0 });
+    set({
+      npcs: [...INITIAL_NPCS],
+      activeNpcDialog: null,
+      pendingDialogs: [],
+      interactionHistory: [],
+      mealConsecutiveDays: 0,
+      mealAutoHandled: false,
+      daysApartFromMother: 0,
+      contactRequest: null,
+    });
   },
 
   getFamilyMembers: (): Npc[] => {
@@ -528,4 +625,324 @@ export const useNpcStore = create<{
       }
     }
   },
+
+  recordContact: (npcId: NpcKey, record: ContactRecord) => {
+    set((state) => ({
+      npcs: state.npcs.map((npc) => {
+        if (npc.id !== npcId) return npc;
+        return {
+          ...npc,
+          lastContact: record,
+          contactHistory: [record, ...npc.contactHistory].slice(0, 50),
+        };
+      }),
+    }));
+  },
+
+  suggestContact: (npcId: NpcKey) => {
+    const npc = get().getNpc(npcId);
+    if (!npc) return;
+
+    if (!npc.isContactable) {
+      set({
+        contactRequest: {
+          npcId,
+          npcName: npc.name,
+          accepted: false,
+          refusalReason: npc.contactUnlockCondition || '现在还不能联系她。',
+          phase: 'refused',
+        },
+      });
+      return;
+    }
+
+    if (!npc.isIntroduced) {
+      set({
+        contactRequest: {
+          npcId,
+          npcName: npc.name,
+          accepted: false,
+          refusalReason: '你还不认识这个人。',
+          phase: 'refused',
+        },
+      });
+      return;
+    }
+
+    if (npcId === 'niece') {
+      set({
+        contactRequest: {
+          npcId,
+          npcName: npc.name,
+          accepted: true,
+          phase: 'accepted',
+        },
+      });
+      return;
+    }
+
+    if (npcId === 'father') {
+      const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+      const tier = getConnectionTier(connectionLevel);
+      const willpowerCurrent = useWillpowerStore.getState().current;
+
+      if (tier === '陌路' || tier === '疏远' || willpowerCurrent < 40) {
+        set({
+          contactRequest: {
+            npcId,
+            npcName: npc.name,
+            accepted: false,
+            refusalReason: willpowerCurrent < 40
+              ? '……太累了。不想打。'
+              : '……我不知道该跟他说什么。',
+            phase: 'refused',
+          },
+        });
+        return;
+      }
+    }
+
+    if (npcId === 'xinyue') {
+      const willpowerCurrent = useWillpowerStore.getState().current;
+      const cost = Math.floor(willpowerCurrent * 0.5);
+      set({
+        contactRequest: {
+          npcId,
+          npcName: npc.name,
+          accepted: true,
+          phase: 'accepted',
+          protagonistPreference: `联系她需要极大的勇气……（将消耗${cost}点意志力）`,
+        },
+      });
+      return;
+    }
+
+    const probability = get().calculateAcceptanceProbability(npcId);
+    const accepted = Math.random() * 100 < probability;
+
+    if (accepted) {
+      const willpowerCurrent = useWillpowerStore.getState().current;
+      const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+      const tier = getConnectionTier(connectionLevel);
+
+      let preference = '';
+      if (willpowerCurrent <= 15) {
+        preference = '发消息吧……打电话太累了。';
+      } else if (tier === '信任' || tier === '共生') {
+        preference = '也许可以打个电话，或者直接去看看。';
+      } else {
+        preference = '发个消息吧，先试探一下。';
+      }
+
+      set({
+        contactRequest: {
+          npcId,
+          npcName: npc.name,
+          accepted: true,
+          phase: 'accepted',
+          protagonistPreference: preference,
+        },
+      });
+    } else {
+      const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+      const tier = getConnectionTier(connectionLevel);
+      const reasons = tier === '倾听' || tier === '信任' || tier === '共生'
+        ? REFUSAL_REASONS_HIGH_CONNECTION
+        : REFUSAL_REASONS_LOW_CONNECTION;
+      const reason = reasons[Math.floor(Math.random() * reasons.length)];
+
+      set({
+        contactRequest: {
+          npcId,
+          npcName: npc.name,
+          accepted: false,
+          refusalReason: reason,
+          phase: 'refused',
+        },
+      });
+    }
+  },
+
+  calculateAcceptanceProbability: (npcId: NpcKey): number => {
+    let probability = 50;
+
+    const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+    const tier = getConnectionTier(connectionLevel);
+    if (tier === '倾听' || tier === '信任' || tier === '共生') {
+      probability += 30;
+    }
+
+    const npc = get().getNpc(npcId);
+    if (npc && npc.affection >= 70) {
+      probability += 25;
+    }
+
+    const willpowerCurrent = useWillpowerStore.getState().current;
+    if (willpowerCurrent >= 50) {
+      probability += 20;
+    }
+    if (willpowerCurrent <= 15) {
+      probability -= 40;
+    }
+
+    const isDeepNumbness = useWillpowerStore.getState().deepNumbness;
+    if (isDeepNumbness) {
+      probability -= 60;
+    }
+
+    if (npc) {
+      const daysSince = get().getDaysSinceLastContact(npcId);
+      if (daysSince > 21) {
+        probability += 15;
+      }
+    }
+
+    const microEnlightenmentConsecutive = useMicroEnlightenmentStore.getState().consecutiveCount;
+    if (microEnlightenmentConsecutive >= 3) {
+      probability += 20;
+    }
+
+    return Math.max(10, Math.min(90, probability));
+  },
+
+  negotiateContactType: (npcId: NpcKey, playerSuggestion: string) => {
+    const npc = get().getNpc(npcId);
+    if (!npc) return;
+
+    const willpowerCurrent = useWillpowerStore.getState().current;
+    const connectionLevel = usePlayerStore.getState().getConnectionLevel();
+    const tier = getConnectionTier(connectionLevel);
+
+    let preferences: ContactType[];
+    if (willpowerCurrent <= 15) {
+      preferences = CONTACT_TYPE_PREFERENCES.low_willpower;
+    } else if (tier === '信任' || tier === '共生') {
+      preferences = CONTACT_TYPE_PREFERENCES.high_connection;
+    } else {
+      preferences = CONTACT_TYPE_PREFERENCES.default;
+    }
+
+    const suggestedType = detectContactType(playerSuggestion);
+    const protagonistPreferred = preferences[0];
+
+    let response = '';
+    let agreedType: ContactType | undefined;
+
+    if (suggestedType === protagonistPreferred) {
+      response = '……行吧。';
+      agreedType = suggestedType;
+    } else if (suggestedType === '上门' && willpowerCurrent < 30) {
+      response = '上门……太累了。发个消息行不行？';
+      agreedType = undefined;
+    } else if (suggestedType === '电话' && protagonistPreferred === '发消息') {
+      response = '打电话……我怕她又在忙，说两句就挂了。发个消息算了。';
+      agreedType = undefined;
+    } else {
+      response = '……好吧。';
+      agreedType = suggestedType || protagonistPreferred;
+    }
+
+    set((state) => ({
+      contactRequest: state.contactRequest
+        ? {
+            ...state.contactRequest,
+            phase: agreedType ? 'negotiating' : 'negotiating',
+            contactType: agreedType,
+            protagonistPreference: response,
+          }
+        : null,
+    }));
+  },
+
+  confirmContactType: (contactType: ContactType) => {
+    set((state) => ({
+      contactRequest: state.contactRequest
+        ? {
+            ...state.contactRequest,
+            contactType,
+            phase: 'in_progress',
+          }
+        : null,
+    }));
+  },
+
+  completeContact: (summary: string) => {
+    const request = get().contactRequest;
+    if (!request) return;
+
+    const timeState = useTimeStore.getState();
+
+    if (request.npcId === 'xinyue') {
+      const willpowerCurrent = useWillpowerStore.getState().current;
+      const cost = Math.floor(willpowerCurrent * 0.5);
+      useWillpowerStore.getState().consume(cost);
+    }
+
+    const contactRecord: ContactRecord = {
+      gameDay: timeState.totalDays,
+      gameDate: formatGameDate(timeState.totalDays),
+      type: request.contactType || '发消息',
+      initiator: '主角',
+      summary: summary.substring(0, 50),
+      keywords: [],
+    };
+
+    get().recordContact(request.npcId, contactRecord);
+
+    const affectionDelta = request.npcId === 'niece' ? 3 : 2;
+    get().adjustAffection(request.npcId, affectionDelta);
+
+    useSceneStore.getState().addNarrativeLog(
+      `你${contactRecord.type}联系了${request.npcName}。${summary}`
+    );
+
+    const interactionRecord: InteractionRecord = {
+      npcId: request.npcId,
+      npcName: request.npcName,
+      content: summary.substring(0, 100),
+      eventId: `contact_${request.npcId}_${timeState.totalDays}`,
+      day: timeState.totalDays,
+      hour: timeState.hour,
+    };
+
+    set((state) => ({
+      contactRequest: null,
+      interactionHistory: [interactionRecord, ...state.interactionHistory].slice(0, 30),
+    }));
+  },
+
+  dismissContactRequest: () => {
+    set({ contactRequest: null });
+  },
+
+  getNpcsByCategory: (category: NpcCategory): Npc[] => {
+    return get().npcs.filter((npc) => npc.category === category && npc.isIntroduced);
+  },
+
+  getDaysSinceLastContact: (npcId: NpcKey): number => {
+    const npc = get().getNpc(npcId);
+    if (!npc || !npc.lastContact) return 999;
+
+    const currentDay = useTimeStore.getState().totalDays;
+    return currentDay - npc.lastContact.gameDay;
+  },
+
+  unlockNpcContact: (npcId: NpcKey) => {
+    set((state) => ({
+      npcs: state.npcs.map((npc) => {
+        if (npc.id !== npcId) return npc;
+        return { ...npc, isContactable: true };
+      }),
+    }));
+  },
 }));
+
+function detectContactType(suggestion: string): ContactType | undefined {
+  if (suggestion.includes('电话') || suggestion.includes('打给') || suggestion.includes('拨打')) return '电话';
+  if (suggestion.includes('上门') || suggestion.includes('去看') || suggestion.includes('见面') || suggestion.includes('去找')) return '上门';
+  if (suggestion.includes('信') || suggestion.includes('写') || suggestion.includes('长消息')) return '写信';
+  if (suggestion.includes('消息') || suggestion.includes('微信') || suggestion.includes('发') || suggestion.includes('短信')) return '发消息';
+  return undefined;
+}
+
+export { NPC_CATEGORY_ORDER };

@@ -19,6 +19,8 @@ import { INITIAL_ORGAN_HEALTH } from '../types/organs';
 import { START_AGE, START_YEAR } from '../types/time';
 import { SAVE_VERSION, SAVE_KEY } from '../types/save';
 import { useTriggerStore } from './useTriggerStore';
+import { useNpcStore } from './useNpcStore';
+import type { Npc } from '../types/npc';
 
 interface GameActions {
   newGame: () => void;
@@ -100,6 +102,18 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
         lastWillpowerValue: ts.lastWillpowerValue,
       };
     })();
+
+    const npcState = (() => {
+      const ns = useNpcStore.getState();
+      return {
+        npcs: ns.npcs,
+        interactionHistory: ns.interactionHistory,
+        mealConsecutiveDays: ns.mealConsecutiveDays,
+        mealAutoHandled: ns.mealAutoHandled,
+        daysApartFromMother: ns.daysApartFromMother,
+      };
+    })();
+
     const saveData = {
       version: SAVE_VERSION,
       timestamp: Date.now(),
@@ -117,6 +131,7 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
         recallCooldown: state.recallCooldown,
         dreamCooldown: state.dreamCooldown,
         triggerState,
+        npcState,
       },
       history: {
         actions: state.actionHistory,
@@ -160,6 +175,16 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
         if (s.triggerState.lastWillpowerValue !== undefined) {
           useTriggerStore.setState({ lastWillpowerValue: s.triggerState.lastWillpowerValue });
         }
+      }
+
+      if (s.npcState) {
+        useNpcStore.setState({
+          npcs: s.npcState.npcs,
+          interactionHistory: s.npcState.interactionHistory || [],
+          mealConsecutiveDays: s.npcState.mealConsecutiveDays || 0,
+          mealAutoHandled: s.npcState.mealAutoHandled || false,
+          daysApartFromMother: s.npcState.daysApartFromMother || 0,
+        });
       }
 
       return true;
