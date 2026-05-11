@@ -4,13 +4,11 @@ import {
   CONNECTION_T06_THRESHOLD,
   CONNECTION_T06_HIGH_THRESHOLD,
   CONNECTION_T06_VERY_HIGH_THRESHOLD,
-  CONNECTION_T07_THRESHOLD,
   TAG_TRIGGER_INTENSITY_THRESHOLD,
 } from '../../types/playerTrigger';
 import { useWillpowerStore } from '../../stores/useWillpowerStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useTriggerStore } from '../../stores/useTriggerStore';
-import { useTimeStore } from '../../stores/useTimeStore';
 import { useTaskStore } from '../../stores/useTaskStore';
 
 export interface TriggerCheckResult {
@@ -125,25 +123,7 @@ export function checkT06(): TriggerCheckResult {
 }
 
 export function checkT07(): TriggerCheckResult {
-  const triggerStore = useTriggerStore.getState();
-  const playerState = usePlayerStore.getState();
-  const connectionLevel = playerState.getConnectionLevel();
-  const timeState = useTimeStore.getState();
-
-  if (triggerStore.isDailyUsed('T07')) {
-    return { triggerType: 'T07', shouldTrigger: false };
-  }
-
-  if (connectionLevel < CONNECTION_T07_THRESHOLD) {
-    return { triggerType: 'T07', shouldTrigger: false };
-  }
-
-  const timeOfDay = timeState.getTimeOfDay();
-  if (timeOfDay !== 'EVENING' && timeOfDay !== 'SLEEP') {
-    return { triggerType: 'T07', shouldTrigger: false };
-  }
-
-  return { triggerType: 'T07', shouldTrigger: true, reason: 'night_before_sleep' };
+  return { triggerType: 'T07', shouldTrigger: false };
 }
 
 export function checkNpcSocialTrigger(tagTriggerIntensity: number, triggeredTag: string | null): boolean {

@@ -7,8 +7,6 @@ import { TextInput } from './TextInput';
 import { SkillButtons } from './SkillButtons';
 import { PauseButton } from './PauseButton';
 import { MorningRitual } from './MorningRitual';
-import { EveningMonologue } from '../narrative/EveningMonologue';
-import { DreamFragment } from '../narrative/DreamFragment';
 import { NarrativeDisplay } from '../narrative/NarrativeDisplay';
 import { WorldEventModal } from './WorldEventModal';
 import { NpcDialogModal } from './NpcDialogModal';
@@ -33,7 +31,7 @@ import { getConnectionTier, CONNECTION_TIER_COLORS, CONNECTION_TIER_DESCRIPTIONS
 import type { ConnectionTier } from '../../types/trust';
 import { TIME_OF_DAY_LABELS, getTimeOfDay as deriveTimeOfDay } from '../../types/time';
 
-type PhaseUI = 'morning-ritual' | 'daytime' | 'evening-monologue' | 'dream-fragment' | 'default';
+type PhaseUI = 'morning-ritual' | 'daytime' | 'default';
 
 const TIER_TEXT_CLASS: Record<ConnectionTier, string> = {
   '陌路': 'text-gray-400',
@@ -71,19 +69,11 @@ export const CoreGameLoop: React.FC = () => {
       if (phaseTransition === 'MORNING') {
         setCurrentPhaseUI('morning-ritual');
         useTimeStore.getState().pause('morning-ritual');
-      } else if (phaseTransition === 'EVENING') {
-        setCurrentPhaseUI('evening-monologue');
-        useTimeStore.getState().pause('evening-monologue');
-      } else if (phaseTransition === 'SLEEP') {
-        setCurrentPhaseUI('dream-fragment');
-        useTimeStore.getState().pause('dream-fragment');
       } else {
         const timeOfDay = useTimeStore.getState().getTimeOfDay();
         if (timeOfDay === 'DAYTIME') {
           setCurrentPhaseUI('daytime');
           useTimeStore.getState().resume('morning-ritual');
-          useTimeStore.getState().resume('evening-monologue');
-          useTimeStore.getState().resume('dream-fragment');
         } else if (currentPhaseUI !== 'default') {
           setCurrentPhaseUI('default');
         }
@@ -172,10 +162,6 @@ export const CoreGameLoop: React.FC = () => {
     switch (currentPhaseUI) {
       case 'morning-ritual':
         return <MorningRitual />;
-      case 'evening-monologue':
-        return <EveningMonologue />;
-      case 'dream-fragment':
-        return <DreamFragment />;
       default:
         return null;
     }

@@ -1,4 +1,26 @@
-﻿﻿
+﻿﻿﻿﻿﻿﻿
+## [v5.3] - 2026-05-07
+
+### 核心变更
+
+取消夜晚和入睡阶段的全屏覆盖，让时间正常流逝，玩家可以继续其他操作。
+
+| 变更 | 旧设计 | 新设计 |
+|:---|:---|:---|
+| 夜晚（20:00-22:59） | EveningMonologue全屏覆盖 + 时间暂停 | **取消覆盖**，时间正常流逝 |
+| 入睡（23:00-05:59） | DreamFragment全屏覆盖 + 时间暂停 | **取消覆盖**，时间正常流逝 |
+| T07夜晚睡前触发 | 触发后弹出感知文本和选择 | **永久禁用** |
+| 夜晚操作限制 | 无法进行NPC联系/技能/输入等任何操作 | **完全解除**，可自由操作 |
+
+### 文件变更
+
+#### 修改文件
+- `src/stores/useDayPhaseStore.ts` - 移除eveningMonologueShown/dreamFragmentShown状态和相关方法
+- `src/components/game/CoreGameLoop.tsx` - 移除EveningMonologue/DreamFragment导入和阶段渲染逻辑
+- `src/systems/trigger/checkTriggers.ts` - checkT07()永久返回false，清理未使用导入
+
+---
+
 ## [v5.2] - 2026-05-07
 
 ### 核心变更
