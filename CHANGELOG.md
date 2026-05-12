@@ -1,4 +1,46 @@
-﻿﻿﻿﻿﻿﻿
+﻿﻿﻿﻿﻿﻿﻿﻿
+## [v5.4] - 2026-05-12
+
+### CrewAI 多Agent内容创作整合
+
+首次成功调用 DeepSeek V4 Flash 运行 CrewAI 完整团队（剧情策划师→角色对话设计师→事件策划师→品质审核师），并将 AI 生成内容全量对接进游戏代码。
+
+#### 剧情体系
+- 新增剧情类型系统 `PlotArc`/`PlotChapter`/`PlotEnding`
+- 三章完整剧情大纲《心印：破妄镜》（看见我执→破除我执→回归本心）
+- 3种结局：觉醒之终 / 平衡之路 / 重返牢笼
+- 9个关键事件，每个含2-4个选项分支
+
+#### NPC对话扩展（6个新事件）
+- 母亲：记忆祠堂线球事件、释然对话事件（含心学金句）
+- 姐姐：面具谈话事件、和解拥抱事件
+- 老友：测试币和解事件（含创业失败心结）
+
+#### 世界事件扩展（3个关键事件）
+- plot_broken_reflection（破碎的倒影·镜像质问）
+- plot_cut_attachment（斩断面具·演技剧场）
+- plot_bridge_souls（渡人之桥·良知磨练）
+
+#### 品质审核
+- 4个Agent全员完成，综合评分9.5/10
+- 5条改进建议全部落地
+
+### 文件变更
+
+#### 新增文件（3个）
+- `src/types/plot.ts` - 剧情类型系统
+- `src/data/plot/narrativePlot.ts` - 三章剧情大纲数据
+- `更新日志-CrewAI整合.md` - 详细整合记录
+
+#### 修改文件（5个）
+- `src/data/npcs/initialNpcs.ts` - 3个NPC新增6个事件
+- `src/data/events/worldEvents.ts` - 新增3个关键事件
+- `src/data/memories/memoryScripts.ts` - 4个梦境扩展（dreamScript）
+- `src/types/skill.ts` - DreamScene接口
+- `CHANGELOG.md` - 版本记录
+
+---
+
 ## [v5.3] - 2026-05-07
 
 ### 核心变更

@@ -45,6 +45,12 @@ export interface MemoryVersion {
   innerVoice: string;
 }
 
+export interface DreamScene {
+  setting: string;
+  text: string;
+  innerVoice?: string;
+}
+
 export interface Memory {
   id: string;
   type: 'good' | 'painful';
@@ -62,6 +68,7 @@ export interface Memory {
   version_triggered_count: number;
   unresolved_version?: MemoryVersion;
   resolved_version?: MemoryVersion;
+  dreamScript?: DreamScene[];
 }
 
 export const RECALL_COOLDOWN = 1;

@@ -569,4 +569,88 @@ export const WORLD_EVENTS: WorldEvent[] = [
       },
     ],
   },
+  {
+    id: 'plot_broken_reflection',
+    type: 'micro',
+    category: 'personal',
+    triggerCondition: { minDay: 120, season: ['autumn', 'winter'], chance: 0.4 },
+    content: '你在梦中走进"万象街市"——那些被你抛弃的失败作品全都活了过来，它们以镜像的形态将你团团围住。其中一个开口了，声音像你自己的回声："你爱的究竟是我们的完美，还是你自己那个完美的影子？"',
+    effects: [{ target: 'willpower', value: -5 }],
+    source: 'inner',
+    taskType: 'spontaneous',
+    importance: 'critical',
+    choices: [
+      {
+        id: 'break_mirror_anger',
+        text: '愤怒地砸碎镜子——"你们懂什么！"',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -10 }, { target: 'cognition', key: 'anger', value: 3 }], narrative: '镜子碎了，但每一片碎片里，都有他的眼睛在看着自己。' }],
+      },
+      {
+        id: 'touch_fragments',
+        text: '抚摸碎片——"你们……还疼吗？"',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -5 }, { target: 'cognition', key: 'self_compassion', value: 3 }], narrative: '指尖被划破，但那一刻他第一次感受到——那些失败也是自己的一部分。' }],
+      },
+      {
+        id: 'flee_mirror',
+        text: '转身逃离——"这不是真的！"',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -8 }, { target: 'cognition', key: 'self_deception', value: 2 }], narrative: '他逃了。但镜子里那个声音在脑海里回响，像没有关掉的收音机。' }],
+      },
+    ],
+  },
+  {
+    id: 'plot_cut_attachment',
+    type: 'micro',
+    category: 'personal',
+    triggerCondition: { minDay: 180, season: ['winter', 'spring'], chance: 0.35 },
+    content: '妄镜深处的剧场。你站在舞台中央，聚光灯刺得睁不开眼。观众席上坐着所有人——母亲、姐姐、旧友——他们齐声呼唤："演下去！演好你的角色！"你发现脸上的面具已经摘不下来了。',
+    effects: [{ target: 'willpower', value: -8 }, { target: 'herd', value: 3 }],
+    source: 'inner',
+    taskType: 'crisis',
+    importance: 'critical',
+    choices: [
+      {
+        id: 'keep_performing',
+        text: '继续表演——"好，我演给你们看。"',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -8 }, { target: 'cognition', key: 'mask_wearer', value: 3 }], narrative: '掌声雷动。但主角知道，掌声不是给他的——是给那个角色的。' }],
+      },
+      {
+        id: 'smash_mask',
+        text: '摔掉面具——"我不演了！"',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -15 }, { target: 'cognition', key: 'break_mask', value: 5 }], narrative: '面具碎裂的声音盖过了掌声。观众席一片寂静——然后，有人在黑暗中鼓起掌来。' }],
+      },
+      {
+        id: 'question_audience',
+        text: '反问观众——"你们到底想要什么？"',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -10 }, { target: 'cognition', key: 'question_norm', value: 3 }], narrative: '观众面面相觑。一个苍老的声音说："我们……只是想看到真实的你。"' }],
+      },
+    ],
+  },
+  {
+    id: 'plot_bridge_souls',
+    type: 'micro',
+    category: 'personal',
+    triggerCondition: { minDay: 300, season: ['spring', 'summer'], chance: 0.3 },
+    content: '经历妄镜之旅后你回到现实。一个被裁员的中年人在路边抽烟，一个年轻人在社交媒体上写下"我不知道该做什么"。你知道那种感觉。你走过去的时候，心里有个声音说：你可以装作没看见。',
+    effects: [{ target: 'willpower', value: -5 }],
+    source: 'inner',
+    taskType: 'spontaneous',
+    importance: 'critical',
+    choices: [
+      {
+        id: 'help_three',
+        text: '帮助每一个你遇到的人',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -20 }, { target: 'cognition', key: 'action_is_knowledge', value: 5 }], narrative: '每一次伸出援手，心口那个位置都会暂时黯淡——但随后比之前更亮。你明白了：良知不是存粮，是肌肉。越用越强。' }],
+      },
+      {
+        id: 'help_one',
+        text: '量力而行，帮一个就够了',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -10 }, { target: 'cognition', key: 'moderate_action', value: 3 }], narrative: '你帮了一个人。不够完美，但你已经不是那个"要么不做、要做就要最好"的人了。这本身就是成长。' }],
+      },
+      {
+        id: 'refuse_help',
+        text: '"我自己都没站稳，怎么扶别人？"',
+        outcomes: [{ probability: 1, effects: [{ target: 'willpower', value: -5 }, { target: 'cognition', key: 'inaction_decay', value: 2 }], narrative: '你走开了。但那天晚上，你梦见一面镜子——不是因为太久没用而蒙尘，而是因为太久没用而裂开。' }],
+      },
+    ],
+  },
 ];
