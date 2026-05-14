@@ -82,7 +82,7 @@ export const usePlayerStore = create<{
   microEnlightenmentCount: 0,
   lastTierChangeNarrative: undefined,
   sweepDustSkill: { lastUsedDay: -1 },
-  vagusNerveSkill: { available: true },
+  vagusNerveSkill: { available: false },
 
   addInfluence: (text: string, intensity?: Intensity, targetActionId?: string) => {
     const resolvedIntensity = intensity ?? 'normal';
@@ -268,7 +268,7 @@ export const usePlayerStore = create<{
       microEnlightenmentCount: 0,
       lastTierChangeNarrative: undefined,
       sweepDustSkill: { lastUsedDay: -1 },
-      vagusNerveSkill: { available: true },
+      vagusNerveSkill: { available: false },
     });
   },
 }));

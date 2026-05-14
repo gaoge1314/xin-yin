@@ -174,6 +174,37 @@
 - `src/components/game/CoreGameLoop.tsx` — 新增发心循环时间暂停 useEffect + 迷走神经时刻暂停 useEffect
 - `src/components/game/DesireInput.tsx` — 新增 isCustomInputFocused 状态，textarea 聚焦时暂停倒计时
 
+### v6.0.3 发心流程体验优化 + Bug 修复 - 2026-05-14
+
+#### Bug 修复
+
+##### 迷走神经时刻卡死修复
+- **问题**：`vagusNerveSkill` 初始值为 `{ available: true }`，导致迷走神经时刻在游戏启动时立即弹出遮罩层，且提交后无法关闭
+- **修复**：初始值改为 `{ available: false }`，仅在意志力低至临界点时由 `skillManager` 触发
+- **修复**：VagusNerveMoment 提交后 2 秒自动关闭，重置 `available` 为 `false`
+- **输入校验**：增加空输入判断，防止提交空白文字
+
+##### 发心循环 checking 阶段时间未暂停
+- **问题**：`desirePhase === 'checking'`（心君 API 请求阶段）不在时间暂停列表中，API 请求期间游戏时间仍在流逝
+- **修复**：在 desire-cycle 暂停条件中增加 `desirePhase === 'checking'`
+
+#### 体验优化
+
+##### 发心时刻 AI 反馈阅读节奏优化
+- **问题**：AI 叙事流式输出完成后立刻自动跳转到下一阶段，玩家来不及阅读完整反馈内容
+- **优化**：
+
+  **叙事阶段**：Agent 2 流式输出完成后不再自动跳转，改为显示完整的叙事文本和「继续」按钮，玩家阅读完毕后手动点击进入裁决阶段
+
+  **裁决阶段**：Agent 3 流式输出完成后同样停留显示，出现「查看裁决」按钮，玩家阅读后手动点击进入揭示阶段
+
+  **Token 缓冲机制**：引入 `pendingJudgmentTokens` 和 `narrativeCompleteRef`，叙事阶段未结束时提前到达的 Agent 3 token 被缓冲，点击继续后刷新到裁决界面，确保内容不丢失
+
+#### 修改文件
+- `src/components/game/CoreGameLoop.tsx` — checking 阶段时间暂停 + 叙事/裁决完成状态 + 继续按钮
+- `src/components/game/VagusNerveMoment.tsx` — 自动关闭机制 + 输入校验
+- `src/stores/usePlayerStore.ts` — vagusNerveSkill 初始值修正
+
 ---
 
 ## [v5.4] - 2026-05-12

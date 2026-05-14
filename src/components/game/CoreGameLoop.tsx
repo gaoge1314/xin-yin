@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { ClockDisplay } from './ClockDisplay';
 import { WillpowerDisplay } from './WillpowerDisplay';
 import { CognitionPanel } from './CognitionPanel';
@@ -81,6 +81,10 @@ export const CoreGameLoop: React.FC = () => {
   const [lastCheckDay, setLastCheckDay] = useState(-1);
   const [desirePromptRequested, setDesirePromptRequested] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [narrativeComplete, setNarrativeComplete] = useState(false);
+  const [judgmentComplete, setJudgmentComplete] = useState(false);
+  const [pendingJudgmentTokens, setPendingJudgmentTokens] = useState('');
+  const narrativeCompleteRef = useRef(false);
 
   useEffect(() => {
     gameLoop.start();
@@ -163,6 +167,10 @@ export const CoreGameLoop: React.FC = () => {
     setDesirePhase('executing');
     setStreamingText('');
     setStreamingPhase('narrative');
+    setNarrativeComplete(false);
+    setJudgmentComplete(false);
+    setPendingJudgmentTokens('');
+    narrativeCompleteRef.current = false;
     setError(null);
 
     const callbacks: DesireCycleCallbacks = {
@@ -172,24 +180,28 @@ export const CoreGameLoop: React.FC = () => {
       },
       onAgentTwoNarrativeComplete: (narrative) => {
         setAgentTwoNarrative(narrative);
-        setStreamingText('');
-        setDesirePhase('judging');
-        setStreamingPhase('judgment');
+        setNarrativeComplete(true);
+        narrativeCompleteRef.current = true;
       },
       onAgentThreeToken: (token) => {
-        setStreamingText((prev) => prev + token);
+        if (narrativeCompleteRef.current) {
+          setPendingJudgmentTokens((prev) => prev + token);
+        } else {
+          setStreamingText((prev) => prev + token);
+        }
       },
       onAgentThreeComplete: (output) => {
         setAgentThreeOutput(output);
-        setStreamingText('');
-        setStreamingPhase(null);
-        setDesirePhase('revealing');
+        setJudgmentComplete(true);
       },
       onSweepingReady: () => {},
       onError: (err) => {
         setError(err.message);
         setDesirePhase('idle');
         setStreamingPhase(null);
+        setNarrativeComplete(false);
+        setJudgmentComplete(false);
+        narrativeCompleteRef.current = false;
       },
     };
 
@@ -199,6 +211,9 @@ export const CoreGameLoop: React.FC = () => {
       setError(err instanceof Error ? err.message : '执行失败');
       setDesirePhase('idle');
       setStreamingPhase(null);
+      setNarrativeComplete(false);
+      setJudgmentComplete(false);
+      narrativeCompleteRef.current = false;
     }
   }, []);
 
@@ -207,6 +222,10 @@ export const CoreGameLoop: React.FC = () => {
     setDesirePhase('executing');
     setStreamingText('');
     setStreamingPhase('narrative');
+    setNarrativeComplete(false);
+    setJudgmentComplete(false);
+    setPendingJudgmentTokens('');
+    narrativeCompleteRef.current = false;
     setError(null);
 
     const callbacks: DesireCycleCallbacks = {
@@ -216,24 +235,28 @@ export const CoreGameLoop: React.FC = () => {
       },
       onAgentTwoNarrativeComplete: (narrative) => {
         setAgentTwoNarrative(narrative);
-        setStreamingText('');
-        setDesirePhase('judging');
-        setStreamingPhase('judgment');
+        setNarrativeComplete(true);
+        narrativeCompleteRef.current = true;
       },
       onAgentThreeToken: (token) => {
-        setStreamingText((prev) => prev + token);
+        if (narrativeCompleteRef.current) {
+          setPendingJudgmentTokens((prev) => prev + token);
+        } else {
+          setStreamingText((prev) => prev + token);
+        }
       },
       onAgentThreeComplete: (output) => {
         setAgentThreeOutput(output);
-        setStreamingText('');
-        setStreamingPhase(null);
-        setDesirePhase('revealing');
+        setJudgmentComplete(true);
       },
       onSweepingReady: () => {},
       onError: (err) => {
         setError(err.message);
         setDesirePhase('idle');
         setStreamingPhase(null);
+        setNarrativeComplete(false);
+        setJudgmentComplete(false);
+        narrativeCompleteRef.current = false;
       },
     };
 
@@ -243,6 +266,9 @@ export const CoreGameLoop: React.FC = () => {
       setError(err instanceof Error ? err.message : '执行失败');
       setDesirePhase('idle');
       setStreamingPhase(null);
+      setNarrativeComplete(false);
+      setJudgmentComplete(false);
+      narrativeCompleteRef.current = false;
     }
   }, []);
 
@@ -272,6 +298,22 @@ export const CoreGameLoop: React.FC = () => {
     });
   }, [sweepingDust]);
 
+  const handleNarrativeContinue = useCallback(() => {
+    setNarrativeComplete(false);
+    narrativeCompleteRef.current = false;
+    setDesirePhase('judging');
+    setStreamingPhase('judgment');
+    setStreamingText(pendingJudgmentTokens);
+    setPendingJudgmentTokens('');
+  }, [pendingJudgmentTokens]);
+
+  const handleJudgmentContinue = useCallback(() => {
+    setJudgmentComplete(false);
+    setStreamingText('');
+    setStreamingPhase(null);
+    setDesirePhase('revealing');
+  }, []);
+
   const handleContinueForward = useCallback(() => {
     setDesirePhase('idle');
     setAgentOneOutput(null);
@@ -279,6 +321,10 @@ export const CoreGameLoop: React.FC = () => {
     setAgentTwoInterpretation('');
     setAgentThreeOutput(null);
     setOriginalDesire('');
+    setNarrativeComplete(false);
+    setJudgmentComplete(false);
+    setPendingJudgmentTokens('');
+    narrativeCompleteRef.current = false;
   }, []);
 
   const handleExitSweeping = useCallback(() => {
@@ -286,6 +332,10 @@ export const CoreGameLoop: React.FC = () => {
     setSweepingDust(null);
     setAgentThreeOutput(null);
     setOriginalDesire('');
+    setNarrativeComplete(false);
+    setJudgmentComplete(false);
+    setPendingJudgmentTokens('');
+    narrativeCompleteRef.current = false;
   }, []);
 
   const handleRequestDesirePrompt = useCallback(() => {
@@ -337,6 +387,7 @@ export const CoreGameLoop: React.FC = () => {
 
   useEffect(() => {
     if (
+      desirePhase === 'checking' ||
       desirePhase === 'prompting' ||
       desirePhase === 'executing' ||
       desirePhase === 'judging' ||
@@ -378,6 +429,62 @@ export const CoreGameLoop: React.FC = () => {
           onSilenceTimeout={handleSilenceTimeout}
           silenceSeconds={60}
         />
+      );
+    }
+
+    if (desirePhase === 'executing' && narrativeComplete) {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="max-w-lg w-full mx-4 rounded-xl border border-white/10 bg-gray-900/95 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="text-center mb-3">
+              <span className="text-white/30 text-xs tracking-wider">他行动了。</span>
+            </div>
+            <div className="border border-white/[0.06] rounded-lg bg-white/[0.01] p-4 min-h-[120px]">
+              <p className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">
+                {agentTwoNarrative}
+              </p>
+            </div>
+            {originalDesire && (
+              <p className="text-white/20 text-[10px] mt-2 text-center">
+                你希望他：{originalDesire}
+              </p>
+            )}
+            <button
+              onClick={handleNarrativeContinue}
+              className="w-full mt-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-white/50 text-sm hover:text-white/70 hover:border-white/[0.15] transition-colors"
+            >
+              继续
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (desirePhase === 'judging' && judgmentComplete) {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="max-w-lg w-full mx-4 rounded-xl border border-white/10 bg-gray-900/95 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="text-center mb-3">
+              <span className="text-white/30 text-xs tracking-wider">他感受到了。</span>
+            </div>
+            <div className="border border-white/[0.06] rounded-lg bg-white/[0.01] p-4 min-h-[120px]">
+              <p className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">
+                {streamingText}
+              </p>
+            </div>
+            {originalDesire && (
+              <p className="text-white/20 text-[10px] mt-2 text-center">
+                你希望他：{originalDesire}
+              </p>
+            )}
+            <button
+              onClick={handleJudgmentContinue}
+              className="w-full mt-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-white/50 text-sm hover:text-white/70 hover:border-white/[0.15] transition-colors"
+            >
+              查看裁决
+            </button>
+          </div>
+        </div>
       );
     }
 

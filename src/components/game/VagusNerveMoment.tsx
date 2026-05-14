@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 
 export const VagusNerveMoment: React.FC = () => {
@@ -6,9 +6,18 @@ export const VagusNerveMoment: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    if (!submitted) return;
+    const timer = setTimeout(() => {
+      usePlayerStore.setState({ vagusNerveSkill: { available: false } });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [submitted]);
+
   if (!vagusSkill || !vagusSkill.available) return null;
 
   const handleResolve = () => {
+    if (!inputText.trim()) return;
     setSubmitted(true);
   };
 
