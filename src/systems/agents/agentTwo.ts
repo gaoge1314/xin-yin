@@ -1,6 +1,20 @@
 import { chatJSON, chatStream } from './deepseekClient';
 import type { AgentTwoInput, AgentTwoOutput } from '../../types/agent';
 
+function validateAgentTwoOutput(raw: Partial<AgentTwoOutput>, rawText?: string): AgentTwoOutput {
+  const fallbackNarrative = rawText && rawText.trim()
+    ? rawText.trim()
+    : '他犹豫了片刻，然后按照习惯继续往前走。似乎有什么在心底动了动，但他没有停下来。';
+
+  return {
+    interpretationOfDesire: raw.interpretationOfDesire ?? '将心愿理解为一种内心深处的需要',
+    plan: raw.plan ?? '遵循惯性的行为模式',
+    narrative: raw.narrative ?? fallbackNarrative,
+    dustUsed: raw.dustUsed ?? null,
+    emotionalTone: raw.emotionalTone ?? 'neutral',
+  };
+}
+
 const SYSTEM_PROMPT_BASE = `你是「谋臣」——主角的执行系统。你的工作是：
 当「心君」发出一个心愿时，你把它翻译成具体的行动计划，
 然后去执行。
@@ -82,9 +96,15 @@ export async function runAgentTwoStream(
     () => {
       try {
         const jsonMatch = fullText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('Agent 2 did not return valid JSON');
-        onComplete(JSON.parse(jsonMatch[0]) as AgentTwoOutput);
-      } catch (e) { onError(e instanceof Error ? e : new Error(String(e))); }
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]) as AgentTwoOutput;
+          onComplete(validateAgentTwoOutput(parsed));
+        } else {
+          onComplete(validateAgentTwoOutput({}, fullText));
+        }
+      } catch {
+        onComplete(validateAgentTwoOutput({}, fullText));
+      }
     },
     onError
   );

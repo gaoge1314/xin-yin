@@ -4,7 +4,6 @@ import { WillpowerDisplay } from './WillpowerDisplay';
 import { CognitionPanel } from './CognitionPanel';
 import { OrganStatusPanel } from './OrganStatusPanel';
 import { PauseButton } from './PauseButton';
-import { MorningRitual } from './MorningRitual';
 import { NarrativeDisplay } from '../narrative/NarrativeDisplay';
 import { NpcDialogModal } from './NpcDialogModal';
 import { TaskPanel } from './TaskPanel';
@@ -28,6 +27,7 @@ import {
 } from '../../systems/agents/agentManager';
 import { useTimeStore } from '../../stores/useTimeStore';
 import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
+import { useTriggerStore } from '../../stores/useTriggerStore';
 import { useNpcStore } from '../../stores/useNpcStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useCognitionStore } from '../../stores/useCognitionStore';
@@ -37,7 +37,7 @@ import type { Cognition } from '../../types/cognition';
 import { TIME_OF_DAY_LABELS, getTimeOfDay as deriveTimeOfDay } from '../../types/time';
 import type { AgentOneOutput, AgentTwoOutput, AgentThreeOutput, SweepingAgentOutput } from '../../types/agent';
 
-type PhaseUI = 'morning-ritual' | 'daytime' | 'default';
+type PhaseUI = 'daytime' | 'default';
 
 const TIER_TEXT_CLASS: Record<ConnectionTier, string> = {
   '陌路': 'text-gray-400',
@@ -101,8 +101,9 @@ export const CoreGameLoop: React.FC = () => {
       const phaseTransition = dayPhaseState.checkDayPhaseTransition();
 
       if (phaseTransition === 'MORNING') {
-        setCurrentPhaseUI('morning-ritual');
-        useTimeStore.getState().pause('morning-ritual');
+        useDayPhaseStore.getState().markMorningRitualDone();
+        useTriggerStore.getState().resetDaily();
+        useTimeStore.getState().resume('morning-ritual');
       } else {
         const timeOfDay = useTimeStore.getState().getTimeOfDay();
         if (timeOfDay === 'DAYTIME') {
@@ -551,8 +552,6 @@ export const CoreGameLoop: React.FC = () => {
     }
 
     switch (currentPhaseUI) {
-      case 'morning-ritual':
-        return <MorningRitual />;
       default:
         return null;
     }

@@ -205,6 +205,28 @@
 - `src/components/game/VagusNerveMoment.tsx` — 自动关闭机制 + 输入校验
 - `src/stores/usePlayerStore.ts` — vagusNerveSkill 初始值修正
 
+### v6.0.4 体验优化 - 2026-05-14
+
+#### 功能移除
+
+##### 移除每日晨间报告
+- **问题**：每天早晨弹出"他醒了"报告画面（感知文本 + 伤痕统计 + 回应他按钮），打断游戏节奏
+- **处理**：直接移除 MorningRitual 组件渲染，MORNING 阶段到达时自动调用 `markMorningRitualDone()` 和 `resetDaily()`，不再暂停时间弹出遮罩
+- **修改文件**：`CoreGameLoop.tsx` — 移除 MorningRitual 导入、PhaseUI 类型、switch 分支和 check 逻辑
+
+#### Bug 修复
+
+##### Agent 2 JSON 解析失败游戏中断
+- **问题**：DeepSeek API 返回的内容有时不是标准 JSON 格式，`agentTwo.ts` 中 `JSON.parse()` 抛出异常，游戏流程中断并显示红色错误信息
+- **修复**：新增 `validateAgentTwoOutput()` 兜底函数，JSON 解析失败时：
+  - 优先使用 API 返回的原始文本作为叙事内容
+  - 填充合理的默认值给 interpretationOfDesire/plan/dustUsed/emotionalTone
+  - 不再抛出异常，改为优雅降级
+
+#### 修改文件
+- `src/components/game/CoreGameLoop.tsx` — 移除晨间报告 + 新增 useTriggerStore 导入
+- `src/systems/agents/agentTwo.ts` — 新增 validateAgentTwoOutput 兜底逻辑
+
 ---
 
 ## [v5.4] - 2026-05-12
