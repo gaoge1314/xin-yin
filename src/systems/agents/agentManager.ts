@@ -31,6 +31,26 @@ let lastDesireDay = -1;
 let silenceTimeout: ReturnType<typeof setTimeout> | null = null;
 let negativeStreak = 0;
 
+function validateAgentOneOutput(raw: Partial<AgentOneOutput>): AgentOneOutput {
+  return {
+    shouldPrompt: raw.shouldPrompt ?? false,
+    urgency: raw.urgency ?? 5,
+    urgencyReason: raw.urgencyReason ?? '',
+    eventDescription: raw.eventDescription ?? '你感受到内心有一丝波动...',
+    suggestedDesires: Array.isArray(raw.suggestedDesires)
+      ? raw.suggestedDesires.map((d: any) => ({
+          text: d.text ?? '未知心愿',
+          type: d.type === 'heartSeal' || d.type === 'dustRisk' ? d.type : 'heartSeal',
+          description: d.description ?? '',
+          relatedDust: d.relatedDust,
+        }))
+      : [
+          { text: '让他允许自己脆弱一次', type: 'heartSeal' as const, description: '放下防备，接纳自己的软弱' },
+          { text: '让他去证明自己', type: 'dustRisk' as const, description: '这可能只是灰尘在说话' },
+        ],
+  };
+}
+
 export async function startDesireCycle(callbacks: DesireCycleCallbacks): Promise<void> {
   try {
     const input: AgentOneInput = {
@@ -53,7 +73,18 @@ export async function startDesireCycle(callbacks: DesireCycleCallbacks): Promise
       daysSinceLastDesire: 999,
     };
 
-    const output = await runAgentOne(input);
+    let output: AgentOneOutput;
+    try {
+      const raw = await runAgentOne(input);
+      output = validateAgentOneOutput(raw);
+    } catch (apiError) {
+      output = validateAgentOneOutput({
+        shouldPrompt: true,
+        urgency: 5,
+        urgencyReason: '无法连接心君，使用默认判断',
+        eventDescription: '你感受到内心有一丝波动...',
+      });
+    }
     callbacks.onAgentOneComplete(output);
   } catch (error) {
     callbacks.onError(error instanceof Error ? error : new Error(String(error)));

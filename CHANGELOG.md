@@ -136,6 +136,30 @@
 - `src/components/game/enlightenment/EnlightenmentSweeping.tsx`
 - `src/data/dialogue/protagonistResponses.ts`
 
+### v6.0.1 热修复 - 2026-05-14
+
+#### Bug 修复
+
+##### DesireInput 组件崩溃修复
+- **问题**：`TypeError: Cannot read properties of undefined (reading 'map')` 在 DesireInput.tsx:92
+- **根因**：Agent 1（心君）API 返回的 JSON 不完整或请求失败时，`suggestedDesires` 字段为 `undefined`
+- **修复**：在 `DesireInput.tsx` 渲染时添加空值合并 `(agentOneOutput.suggestedDesires || [])`
+- **修复**：在 `agentManager.ts` 中新增 `validateAgentOneOutput()` 函数，对所有 Agent 1 输出字段进行空值校验，并提供默认降级心愿选项
+- **修复**：`startDesireCycle()` 中 API 调用包裹 try-catch，失败时使用默认降级值
+
+##### CoreGameLoop 初始化时序修复
+- **问题**：游戏进入核心循环时立即触发发心时刻检查，导致 Agent 1 API 在游戏状态未完全就绪时被调用
+- **修复**：新增 `hasInitialized` 状态，添加 3 秒延迟后才开始执行发心检查
+- **修改文件**：`CoreGameLoop.tsx` — 在 `useEffect` 中设置 `setTimeout` 延迟初始化
+
+#### 安全修复
+- `.env` 文件添加到 `.gitignore`，防止 API 密钥被提交到仓库
+
+#### 修改文件
+- `src/components/game/CoreGameLoop.tsx` — 初始化延迟 + 空值守卫
+- `src/components/game/DesireInput.tsx` — 空值合并修复
+- `src/systems/agents/agentManager.ts` — 输出校验 + 异常降级
+
 ---
 
 ## [v5.4] - 2026-05-12

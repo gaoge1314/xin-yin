@@ -80,11 +80,14 @@ export const CoreGameLoop: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastCheckDay, setLastCheckDay] = useState(-1);
   const [desirePromptRequested, setDesirePromptRequested] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     gameLoop.start();
+    const timer = setTimeout(() => setHasInitialized(true), 3000);
     return () => {
       gameLoop.stop();
+      clearTimeout(timer);
     };
   }, []);
 
@@ -112,13 +115,14 @@ export const CoreGameLoop: React.FC = () => {
 
   useEffect(() => {
     if (desirePhase !== 'idle') return;
+    if (!hasInitialized) return;
 
     const totalDays = useTimeStore.getState().totalDays;
     if (totalDays === lastCheckDay) return;
 
     setLastCheckDay(totalDays);
     checkDesireMoment();
-  }, [lastCheckDay, desirePhase]);
+  }, [lastCheckDay, desirePhase, hasInitialized]);
 
   const checkDesireMoment = useCallback(async () => {
     setDesirePhase('checking');

@@ -89,7 +89,7 @@ export const DesireInput: React.FC<DesireInputProps> = ({
         </div>
 
         <div className="space-y-2 mb-5 max-h-64 overflow-y-auto">
-          {agentOneOutput.suggestedDesires.map((desire, idx) => {
+          {(agentOneOutput.suggestedDesires || []).map((desire, idx) => {
             const isSelected = selectedDesire === desire.text;
             const isHeartSeal = desire.type === 'heartSeal';
             const isDustRisk = desire.type === 'dustRisk';
