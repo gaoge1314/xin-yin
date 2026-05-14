@@ -18,9 +18,11 @@ export const DesireInput: React.FC<DesireInputProps> = ({
   const [customInput, setCustomInput] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [countdown, setCountdown] = useState(silenceSeconds);
+  const [isCustomInputFocused, setIsCustomInputFocused] = useState(false);
   const countdownRef = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
+    if (isCustomInputFocused) return;
     countdownRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -35,7 +37,7 @@ export const DesireInput: React.FC<DesireInputProps> = ({
     return () => {
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
-  }, []);
+  }, [isCustomInputFocused]);
 
   const handleSelect = (desire: SuggestedDesire) => {
     if (showCustomInput) return;
@@ -153,6 +155,8 @@ export const DesireInput: React.FC<DesireInputProps> = ({
                 placeholder="输入你的心愿，比如：让他允许自己脆弱一次..."
                 className="w-full px-3 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-white/70 text-sm placeholder-white/15 resize-none h-20 focus:outline-none focus:border-purple-400/40"
                 autoFocus
+                onFocus={() => setIsCustomInputFocused(true)}
+                onBlur={() => setIsCustomInputFocused(false)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();

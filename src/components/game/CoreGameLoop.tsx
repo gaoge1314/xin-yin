@@ -317,6 +317,7 @@ export const CoreGameLoop: React.FC = () => {
 
   const xinYinLevel = usePlayerStore((s) => s.xinYinLevel);
   const herdLevel = usePlayerStore((s) => s.herdLevel);
+  const vagusSkill = usePlayerStore((s) => s.vagusNerveSkill);
 
   useEffect(() => {
     if (activeNpcDialog) {
@@ -333,6 +334,28 @@ export const CoreGameLoop: React.FC = () => {
       useTimeStore.getState().resume('contact-flow');
     }
   }, [contactRequest?.phase]);
+
+  useEffect(() => {
+    if (
+      desirePhase === 'prompting' ||
+      desirePhase === 'executing' ||
+      desirePhase === 'judging' ||
+      desirePhase === 'revealing' ||
+      desirePhase === 'sweeping'
+    ) {
+      useTimeStore.getState().pause('desire-cycle');
+    } else {
+      useTimeStore.getState().resume('desire-cycle');
+    }
+  }, [desirePhase]);
+
+  useEffect(() => {
+    if (vagusSkill?.available) {
+      useTimeStore.getState().pause('vagus-nerve');
+    } else {
+      useTimeStore.getState().resume('vagus-nerve');
+    }
+  }, [vagusSkill?.available]);
 
   const renderPhaseOverlay = () => {
     if (activeNpcDialog) {

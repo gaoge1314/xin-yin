@@ -160,6 +160,20 @@
 - `src/components/game/DesireInput.tsx` — 空值合并修复
 - `src/systems/agents/agentManager.ts` — 输出校验 + 异常降级
 
+### v6.0.2 发心时刻时间停止 - 2026-05-14
+
+#### 新增功能
+
+##### 发心时刻时间暂停
+- **发心循环全阶段暂停**：进入发心提示、执行、裁决、扫尘等阶段时游戏时间自动暂停
+- **迷走神经时刻暂停**：强制输入场景弹出时时间暂停
+- **倒计时锁定**：在 DesireInput 自由输入框中输入文字时，60 秒倒计时暂停，失焦后恢复
+- 使用 `useTimeStore` 多原因引用计数机制，通过 `pause('desire-cycle')` / `pause('vagus-nerve')` 实现
+
+#### 修改文件
+- `src/components/game/CoreGameLoop.tsx` — 新增发心循环时间暂停 useEffect + 迷走神经时刻暂停 useEffect
+- `src/components/game/DesireInput.tsx` — 新增 isCustomInputFocused 状态，textarea 聚焦时暂停倒计时
+
 ---
 
 ## [v5.4] - 2026-05-12
