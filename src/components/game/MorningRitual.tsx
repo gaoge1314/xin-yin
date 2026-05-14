@@ -7,10 +7,7 @@ import { useTriggerStore } from '../../stores/useTriggerStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { generateT01Perception } from '../../systems/trigger/generatePerception';
 import { TIME_OF_DAY_LABELS } from '../../types/time';
-import { calculateDialogueConstraints } from '../../systems/dialogue/calculateConstraints';
-import { generateProtagonistResponse, inferEmotionalState } from '../../systems/dialogue/generateResponse';
-import { buildDialogueInputForPlayer } from '../../systems/dialogue/buildDialogueInput';
-import { useDialogueMemoryStore } from '../../systems/dialogue/dialogueMemoryCache';
+import { calculateDialogueConstraints, generateProtagonistResponse, inferEmotionalState, buildDialogueInputForPlayer, useDialogueMemoryStore } from '../../systems/dialogue/compatStubs';
 
 const WANGYANGMING_HINTS = [
   '知是行之始，行是知之成。不必等想清楚了再走。',

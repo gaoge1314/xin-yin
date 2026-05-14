@@ -53,6 +53,7 @@ interface PlayerActions {
   getXinYinProbability: () => number;
   setAtHome: (atHome: boolean) => void;
   updateHerdLevel: () => void;
+  adjustXinYin: (delta: number) => void;
   reset: () => void;
 }
 
@@ -246,6 +247,12 @@ export const usePlayerStore = create<{
 
     const newHerd = Math.max(0, Math.min(100, herdFromRules + personalityModifier));
     set({ herdLevel: newHerd });
+  },
+
+  adjustXinYin: (delta: number) => {
+    set((state) => ({
+      xinYinLevel: Math.max(0, Math.min(100, state.xinYinLevel + delta)),
+    }));
   },
 
   reset: () => {

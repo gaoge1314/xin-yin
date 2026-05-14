@@ -1,4 +1,143 @@
-﻿﻿﻿﻿﻿﻿﻿﻿
+﻿﻿﻿﻿﻿﻿﻿
+## [v6.0] - 2026-05-14
+
+### 三层Agent架构重构 —— "心君-谋臣-裁决官" 感性-理性-感性框架
+
+基于 v6.0 设计文档，将游戏架构从预设选项/判定系统全面重构为三层独立 Agent 协作框架，实现真正的叙事驱动和 AI 自由生成。
+
+#### 核心架构
+
+| 层级 | Agent | 角色 | 职责 |
+|:---|:---|:---|:---|
+| 第一层（感性） | 心君 Agent | 潜意识代言人 | 识别发心时刻、建议愿望、感知当前状态 |
+| 第二层（理性） | 谋臣 Agent | 理性规划者 | 转化愿望为执行计划、被灰尘曲解认知 |
+| 第三层（感性） | 裁决官 Agent | 内在法官 | 判断结果是否匹配初心、评估遗产 |
+
+#### 新增功能
+
+##### 发心系统（心君 Agent）
+- **发心时刻识别**：当灰尘积累或关键事件发生时，时间暂停，弹出愿望输入界面
+- **建议愿望**：Agent 1 根据当前状态提供 3 个建议愿望选项
+- **自由输入**：玩家可自由输入任何愿望
+- **60秒倒计时**：发心时刻持续 60 秒，超时自动选择"接受惯性"
+- **纯灰尘驱动**：发心触发完全由灰尘状态驱动
+- **"我接受他按惯性走"选项**：接受当前惯性，让主角按既有轨迹行动
+
+##### 灰尘扭曲机制（谋臣 Agent）
+- **认知转码**：Agent 2 将玩家感性的愿望转码为理性的具体目标和执行计划
+- **灰尘曲解**：在执行计划生成过程中，已有灰尘会扭曲认知，改变执行路径
+- **激活规则**：当前仅激活最相关的 1 个灰尘（未来支持权重叠加调整难度）
+- **叙事驱动**：AI 自由生成任意执行方案，呈现完整的叙事文本
+
+##### 以行破知机制（扫尘 Agent）
+- **行动破除认知**：灰尘（理性认知框架）只能通过具体行为证据消除
+- **扫尘流程**：提供具体行动方案 → 标记对应灰尘为"可清除" → 执行清除
+- **证据要求**：每次扫尘需要玩家提供具体的行为证据
+
+##### 裁决系统（裁决官 Agent）
+- **匹配度评分**：Agent 3 评估最终结果与原始初心的匹配程度（0-100）
+- **内心独白**：揭示主角真实感受
+- **扭曲检测**：判断计划是否被灰尘扭曲
+- **遗产评估**：记录本次选择的微妙影响（双维度：物质世界 vs 精神世界）
+
+##### 记忆衰减系统
+- **艾宾浩斯遗忘曲线**：记忆强度 = 初始强度 × exp(-天数 / 半衰期)
+- **衰减影响**：衰减后的记忆影响 Agent 决策权重
+- **记忆摘要**：为 Agent 提供精简后的记忆上下文
+
+##### 遗产追踪系统
+- **双维度记录**：物质遗产（现实世界改变）vs 精神遗产（心灵世界改变）
+- **结局判断**：根据遗产累积方向触发相应结局
+- **微妙影响**：记录每次选择的长期影响
+
+#### DeepSeek API 集成
+- **自定义流式客户端**：基于 fetch 的 SSE 流式响应，实时更新 UI
+- **三个独立 Agent**：每个 Agent 使用独立的系统提示词和 API 调用
+- **提示词工程**：为每个 Agent 精心设计的角色设定和输出格式约束
+- **错误处理**：完善的超时、重试和降级机制
+
+#### UI 组件更新
+- `DesireInput.tsx` - 发心输入界面，支持建议选择/自由输入/倒计时
+- `JudgmentReveal.tsx` - 裁决结果展示，匹配度评分 + 内心独白
+- `SweepingFlow.tsx` - 扫尘流程 UI，证据输入 + 灰尘清除
+- `CoreGameLoop.tsx` - 重构为完整发心循环控制器
+
+#### 类型系统扩展
+- `src/types/agent.ts` - Agent 输入/输出接口定义
+- `src/types/memory.ts` - 记忆衰减类型
+- `src/types/legacy.ts` - 遗产追踪类型
+
+#### 清理旧系统（移除 22 个过时文件）
+- 移除 `src/systems/alignment/` - 相合判定引擎（被 Agent 3 替代）
+- 移除 `src/systems/options/` - 预设选项生成器（被 Agent 2 替代）
+- 移除 `src/systems/autonomousChoice/` - 自主选择系统
+- 移除 `src/stores/useAlignmentStore.ts` - 相合判定状态
+- 移除 `src/stores/useOptionStore.ts` - 选项状态
+- 移除 `src/components/game/OptionList.tsx` - 旧选项列表
+- 移除 `src/components/game/UltimateChoice.tsx` - 终极选择
+- 移除 `src/components/game/CauseModeScene.tsx` - 因果模式场景
+- 移除启蒙（龙场悟道）相关组件
+
+### 文件变更
+
+#### 新增文件（10个）
+- `src/types/agent.ts` - Agent 交互类型定义
+- `src/types/memory.ts` - 记忆衰减类型
+- `src/types/legacy.ts` - 遗产追踪类型
+- `src/systems/agents/agentManager.ts` - Agent 编排器
+- `src/systems/agents/agentOne.ts` - 心君 Agent 实现
+- `src/systems/agents/agentTwo.ts` - 谋臣 Agent 实现
+- `src/systems/agents/agentThree.ts` - 裁决官 Agent 实现
+- `src/systems/agents/sweepingAgent.ts` - 扫尘 Agent
+- `src/systems/agents/deepseekClient.ts` - DeepSeek API 流式客户端
+- `src/systems/memory/memoryDecay.ts` - 记忆衰减算法
+- `src/systems/legacy/legacyTracker.ts` - 遗产追踪
+- `src/systems/dialogue/compatStubs.ts` - 兼容性存根
+- `src/components/game/DesireInput.tsx` - 发心输入界面
+- `src/components/game/JudgmentReveal.tsx` - 裁决展示界面
+- `src/components/game/SweepingFlow.tsx` - 扫尘流程界面
+
+#### 修改文件（12个）
+- `src/components/game/CoreGameLoop.tsx` - 集成三层 Agent 循环
+- `src/components/game/GameScreen.tsx` - 更新导入路径
+- `src/components/game/MorningRitual.tsx` - 适配新架构
+- `src/components/game/SceneController.tsx` - 更新场景路由
+- `src/components/game/VagusNerveMoment.tsx` - 适配新架构
+- `src/components/game/TextInput.tsx` - 适配发心输入
+- `src/components/narrative/EveningMonologue.tsx` - 适配新架构
+- `src/stores/useGameStore.ts` - 新增 dustCount/legacyEntries
+- `src/stores/useCognitionStore.ts` - 新增 dustCounter/evidence
+- `src/stores/useNpcStore.ts` - 适配新架构
+- `src/stores/usePlayerStore.ts` - 适配新架构
+- `src/systems/gameLoop.ts` - 集成发心检查
+- `src/data/npcs/initialNpcs.ts` - 适配新架构
+- `src/types/save.ts` - 扩展存档类型
+- `src/index.css` - 新增扫尘动画样式
+
+#### 删除文件（22个）
+- `src/systems/alignment/alignmentJudge.ts`
+- `src/systems/alignment/alignmentTypes.ts`
+- `src/systems/alignment/buildAlignmentInput.ts`
+- `src/systems/alignment/fallbackAlignment.ts`
+- `src/systems/options/optionGenerator.ts`
+- `src/systems/options/optionMarkers.ts`
+- `src/systems/autonomousChoice/autonomousChoice.ts`
+- `src/systems/dialogue/buildDialogueInput.ts`
+- `src/systems/dialogue/calculateConstraints.ts`
+- `src/systems/dialogue/dialogueMemoryCache.ts`
+- `src/systems/dialogue/generateResponse.ts`
+- `src/stores/useAlignmentStore.ts`
+- `src/stores/useOptionStore.ts`
+- `src/components/game/OptionList.tsx`
+- `src/components/game/UltimateChoice.tsx`
+- `src/components/game/CauseModeScene.tsx`
+- `src/components/game/enlightenment/EnlightenmentAwakening.tsx`
+- `src/components/game/enlightenment/EnlightenmentFalling.tsx`
+- `src/components/game/enlightenment/EnlightenmentSweeping.tsx`
+- `src/data/dialogue/protagonistResponses.ts`
+
+---
+
 ## [v5.4] - 2026-05-12
 
 ### CrewAI 多Agent内容创作整合

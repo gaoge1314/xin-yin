@@ -1,10 +1,17 @@
 import { create } from 'zustand';
 import type { Cognition, CognitionId } from '../types/cognition';
+import type { EvidenceRecord } from '../types/agent';
 import { INITIAL_COGNITIONS } from '../data/cognitions/initialCognitions';
 import { usePlayerStore } from './usePlayerStore';
 import { useSceneStore } from './useSceneStore';
 
 const COGNITION_TRANSFORM_BASE_RATE = 0.5;
+
+interface DustMeta {
+  counter: number;
+  evidenceRecords: EvidenceRecord[];
+  sweepAttempts: number;
+}
 
 interface CognitionActions {
   recordPositiveFeedback: (cognitionId: CognitionId, actionId: string) => void;
@@ -17,15 +24,21 @@ interface CognitionActions {
   getCognition: (cognitionId: CognitionId) => Cognition | undefined;
   getUnrelievedCognitions: () => Cognition[];
   getRelievedCognitions: () => Cognition[];
+  updateDustCounter: (cognitionId: CognitionId, counter: number, evidenceRecords: EvidenceRecord[]) => void;
+  recordSweepAttempt: (cognitionId: CognitionId) => void;
+  transformDust: (cognitionId: string) => void;
+  getDustMeta: (cognitionId: string) => DustMeta;
   reset: () => void;
 }
 
 export const useCognitionStore = create<{
   cognitions: Cognition[];
   unlockedCount: number;
+  dustMetaMap: Record<string, DustMeta>;
 } & CognitionActions>((set, get) => ({
   cognitions: [...INITIAL_COGNITIONS],
   unlockedCount: INITIAL_COGNITIONS.filter((c) => c.isUnlocked).length,
+  dustMetaMap: {},
 
   recordPositiveFeedback: (cognitionId: CognitionId, actionId: string) => {
     const cognition = get().cognitions.find((c) => c.id === cognitionId);
@@ -180,10 +193,57 @@ export const useCognitionStore = create<{
     return get().cognitions.filter((c) => c.isRelieved);
   },
 
+  updateDustCounter: (cognitionId: CognitionId, counter: number, evidenceRecords: EvidenceRecord[]) => {
+    set((state) => ({
+      dustMetaMap: {
+        ...state.dustMetaMap,
+        [cognitionId]: {
+          counter,
+          evidenceRecords,
+          sweepAttempts: state.dustMetaMap[cognitionId]?.sweepAttempts || 0,
+        },
+      },
+    }));
+  },
+
+  recordSweepAttempt: (cognitionId: CognitionId) => {
+    set((state) => {
+      const existing = state.dustMetaMap[cognitionId] || { counter: 0, evidenceRecords: [], sweepAttempts: 0 };
+      return {
+        dustMetaMap: {
+          ...state.dustMetaMap,
+          [cognitionId]: {
+            ...existing,
+            sweepAttempts: existing.sweepAttempts + 1,
+          },
+        },
+      };
+    });
+  },
+
+  transformDust: (cognitionId: string) => {
+    set((state) => ({
+      cognitions: state.cognitions.map((c) => {
+        if (c.id !== cognitionId) return c;
+        return {
+          ...c,
+          isTransformed: true,
+          isRelieved: true,
+          currentContent: c.targetContent,
+        };
+      }),
+    }));
+  },
+
+  getDustMeta: (cognitionId: string): DustMeta => {
+    return get().dustMetaMap[cognitionId] || { counter: 0, evidenceRecords: [], sweepAttempts: 0 };
+  },
+
   reset: () => {
     set({
       cognitions: [...INITIAL_COGNITIONS],
       unlockedCount: INITIAL_COGNITIONS.filter((c) => c.isUnlocked).length,
+      dustMetaMap: {},
     });
   },
 }));

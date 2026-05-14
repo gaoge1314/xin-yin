@@ -15,7 +15,6 @@ import { useTaskStore } from '../stores/useTaskStore';
 import { useTriggerStore } from '../stores/useTriggerStore';
 import { checkT01, checkT02, checkT03, checkT04, checkT05, checkT06, checkNpcSocialTrigger } from './trigger/checkTriggers';
 import { generatePerception } from './trigger/generatePerception';
-import { detectTriggeredTag } from './dialogue/buildDialogueInput';
 import type { Action, Outcome, ActionRecord, PlayerInfluence } from '../types/action';
 import type { CognitionId } from '../types/cognition';
 import type { OrganHealth } from '../types/organs';
@@ -25,6 +24,7 @@ import { ORGAN_CRITICAL_THRESHOLD } from '../types/organs';
 import type { Season } from '../types/time';
 import { INITIAL_EMOTION_TRIGGERS } from '../data/triggers/initialTriggers';
 import { checkPrematureDeath } from './ending/endingJudge';
+import { detectTriggeredTag } from './dialogue/compatStubs';
 
 interface ActionHistoryEntry {
   actionId: string;

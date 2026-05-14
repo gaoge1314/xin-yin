@@ -16,10 +16,8 @@ import { useSocialRuleStore } from '../../stores/useSocialRuleStore';
 import { useAnchorStore } from '../../stores/useAnchorStore';
 import { useDayPhaseStore } from '../../stores/useDayPhaseStore';
 import { RooftopScene } from './RooftopScene';
-import { CauseModeScene } from './CauseModeScene';
 import { GameOverScene } from './GameOverScene';
 import { AwakeningScene } from './AwakeningScene';
-import { EnlightenmentSweeping } from './enlightenment/EnlightenmentSweeping';
 
 function resetAllStores() {
   useTimeStore.getState().reset();
@@ -74,19 +72,10 @@ export const SceneController: React.FC = () => {
     switch (phase) {
       case 'prologue-rooftop':
         return <RooftopScene onHoldOn={handleHoldOn} onLetGo={handleLetGo} />;
-      case 'prologue-cause':
-        return (
-          <CauseModeScene
-            onRetry={handleCauseRetry}
-            onGiveUp={handleCauseGiveUp}
-          />
-        );
       case 'prologue-gameover':
         return <GameOverScene onReturnToMenu={handleReturnToMenu} />;
       case 'prologue-awakening':
         return <AwakeningScene onAwakeningComplete={handleAwakeningComplete} />;
-      case 'enlightenment-sweeping':
-        return <EnlightenmentSweeping />;
       default:
         return null;
     }

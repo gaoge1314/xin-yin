@@ -21,6 +21,7 @@ import { SAVE_VERSION, SAVE_KEY } from '../types/save';
 import { useTriggerStore } from './useTriggerStore';
 import { useNpcStore } from './useNpcStore';
 import type { Npc } from '../types/npc';
+import type { LegacyEntry } from '../types/agent';
 
 interface GameActions {
   newGame: () => void;
@@ -28,6 +29,8 @@ interface GameActions {
   loadGame: () => boolean;
   hasSave: () => boolean;
   deleteSave: () => void;
+  addLegacyEntry: (entry: LegacyEntry) => void;
+  getLegacyEntries: () => LegacyEntry[];
   reset: () => void;
 }
 
@@ -46,6 +49,7 @@ interface FullGameState {
   actionHistory: ActionRecord[];
   eventHistory: EventRecord[];
   transformations: TransformationRecord[];
+  legacyEntries: LegacyEntry[];
 }
 
 const initialGameState: FullGameState = {
@@ -84,6 +88,7 @@ const initialGameState: FullGameState = {
   actionHistory: [],
   eventHistory: [],
   transformations: [],
+  legacyEntries: [],
 };
 
 export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
@@ -199,6 +204,16 @@ export const useGameStore = create<FullGameState & GameActions>((set, get) => ({
 
   deleteSave: () => {
     localStorage.removeItem(SAVE_KEY);
+  },
+
+  addLegacyEntry: (entry: LegacyEntry) => {
+    set((state) => ({
+      legacyEntries: [...state.legacyEntries, entry],
+    }));
+  },
+
+  getLegacyEntries: () => {
+    return get().legacyEntries;
   },
 
   reset: () => {

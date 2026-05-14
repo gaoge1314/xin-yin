@@ -9,10 +9,7 @@ import { useAlignmentStore } from '../../stores/useAlignmentStore';
 import { buildAlignmentInput } from '../../systems/alignment/buildAlignmentInput';
 import { TRUST_LOW_THRESHOLD, getConnectionTier } from '../../types/trust';
 import type { ConnectionTier } from '../../types/trust';
-import { calculateDialogueConstraints } from '../../systems/dialogue/calculateConstraints';
-import { generateProtagonistResponse, inferEmotionalState } from '../../systems/dialogue/generateResponse';
-import { buildDialogueInputForPlayer } from '../../systems/dialogue/buildDialogueInput';
-import { useDialogueMemoryStore } from '../../systems/dialogue/dialogueMemoryCache';
+import { calculateDialogueConstraints, generateProtagonistResponse, inferEmotionalState, buildDialogueInputForPlayer, useDialogueMemoryStore } from '../../systems/dialogue/compatStubs';
 
 type Intensity = 'whisper' | 'normal' | 'earnest' | 'resonance';
 

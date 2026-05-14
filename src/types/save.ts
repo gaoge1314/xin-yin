@@ -48,6 +48,8 @@ export type GamePhase =
   | 'prologue-gameover'
   | 'prologue-awakening'
   | 'core-loop'
+  | 'desiring'
+  | 'sweeping'
   | 'enlightenment-sweeping'
   | 'ending';
 

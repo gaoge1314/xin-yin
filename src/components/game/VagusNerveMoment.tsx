@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
-import { useOptionStore } from '../../stores/useOptionStore';
+import { usePlayerStore } from '../../stores/usePlayerStore';
 
 export const VagusNerveMoment: React.FC = () => {
-  const vagusNerveWindow = useOptionStore((s) => s.vagusNerveWindow);
+  const vagusSkill = usePlayerStore((s) => s.vagusNerveSkill);
   const [inputText, setInputText] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  if (!vagusNerveWindow) return null;
+  if (!vagusSkill || !vagusSkill.available) return null;
 
-  const handleSubmit = () => {
-    if (!inputText.trim()) return;
+  const handleResolve = () => {
     setSubmitted(true);
-    useOptionStore.getState().setVagusNerveWindow(false);
-    setTimeout(() => {
-      setSubmitted(false);
-      setInputText('');
-    }, 2000);
   };
 
   const physiologicalReactions = [
@@ -43,13 +37,13 @@ export const VagusNerveMoment: React.FC = () => {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                onKeyDown={(e) => e.key === 'Enter' && handleResolve()}
                 className="flex-1 px-4 py-2 bg-gray-900/80 border border-red-900/50 rounded text-gray-200 text-sm focus:outline-none focus:border-red-600"
                 placeholder="对他说话……"
                 autoFocus
               />
               <button
-                onClick={handleSubmit}
+                onClick={handleResolve}
                 className="px-4 py-2 bg-red-900/50 text-red-200 rounded text-sm hover:bg-red-800/50 transition-colors"
               >
                 说

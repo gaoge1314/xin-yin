@@ -5,10 +5,7 @@ import { useSceneStore } from '../../stores/useSceneStore';
 import { useTimeStore } from '../../stores/useTimeStore';
 import { useTriggerStore } from '../../stores/useTriggerStore';
 import { generateT07Perception } from '../../systems/trigger/generatePerception';
-import { calculateDialogueConstraints } from '../../systems/dialogue/calculateConstraints';
-import { generateProtagonistResponse, inferEmotionalState } from '../../systems/dialogue/generateResponse';
-import { buildDialogueInputForPlayer } from '../../systems/dialogue/buildDialogueInput';
-import { useDialogueMemoryStore } from '../../systems/dialogue/dialogueMemoryCache';
+import { calculateDialogueConstraints, generateProtagonistResponse, inferEmotionalState, buildDialogueInputForPlayer, useDialogueMemoryStore } from '../../systems/dialogue/compatStubs';
 import { TIME_OF_DAY_LABELS } from '../../types/time';
 
 interface MonologueLine {
